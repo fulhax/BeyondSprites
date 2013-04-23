@@ -5,7 +5,7 @@ AC_PREREQ([2.69])
 AC_INIT(ludumdare, 0.1, c0r73x@gmail.com)
 AM_INIT_AUTOMAKE
 
-AC_OUTPUT(Makefile src/Makefile)
+AC_OUTPUT(Makefile bin/Makefile)
 
 # Checks for programs.
 AC_PROG_CXX
