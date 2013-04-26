@@ -9,13 +9,21 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include <AL/al.h>
+#include <AL/alc.h>
+#include <AL/alut.h>
+
 class Engine
 {
         aiScene *test;
+        unsigned int ttest;
+        unsigned int atest;
 
         bool Running;
     public:
-        void DrawModel(aiScene* model);
+        unsigned int LoadSound(const char* filename);
+        unsigned int LoadTexture(const char* filename);
+        void DrawModel(aiScene* model, unsigned int texture);
         aiScene* LoadModel(const char* filename);
         int Init();
         void MainLoop();
