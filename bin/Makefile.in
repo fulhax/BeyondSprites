@@ -209,7 +209,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CXXFLAGS = -Wall -O2 -g -I../lib/glfw/include
-AM_LDFLAGS = -L../lib/glfw/lib -lglfw -lGL -lGLU
+AM_LDFLAGS = -L../lib/glfw/lib -lglfw -lGL -lGLU -lassimp
 game_SOURCES = main.cpp
 all: all-am
 
