@@ -12,7 +12,7 @@ Entity::Entity()
     health = 10;
     model = 0;
     texture = 0;
-    attacktime = 0.2f;
+    attacktime = 0.3f;
     nextattack = attacktime;
 
     alive = false;
@@ -22,7 +22,7 @@ Laser::Laser()
 {
     pos_x = 0;
     pos_y = 0;
-    speed = 20;
+    speed = 10;
     damage = 10;
     direction = 0;
     alive = false;
@@ -38,7 +38,7 @@ void EnemyHandler::Update()
                 Badguys[i].alive = false;
 
             Badguys[i].pos_y += Badguys[i].speed * gEngine.dtime;
-            Badguys[i].pos_x = Badguys[i].start_x + sin(2.0f*PI*Badguys[i].freq);
+            Badguys[i].pos_x = Badguys[i].start_x + Badguys[i].amp*sin(2.0f*PI*Badguys[i].freq);
             Badguys[i].freq += 1 * gEngine.dtime;
 
             Badguys[i].Attack();
@@ -51,7 +51,10 @@ void EnemyHandler::Update()
             {
                 default:
                 case 0:
-                    Badguys[i].speed = 5;
+                    Badguys[i].amp = 0;
+                    Badguys[i].freq = 0;
+
+                    Badguys[i].speed = 2;
                     Badguys[i].attacktime = 1;
                     Badguys[i].health = 30;
                     Badguys[i].size = model[0].size;
@@ -59,7 +62,10 @@ void EnemyHandler::Update()
                     Badguys[i].texture = model[0].textures[rand()%MAX_TEXTURES];
                 break;
                 case 1:
-                    Badguys[i].speed = 10;
+                    Badguys[i].freq = 0;
+                    Badguys[i].amp = 2;
+
+                    Badguys[i].speed = 6;
                     Badguys[i].attacktime = 0.3f;
 
                     Badguys[i].health = 5;
@@ -68,7 +74,6 @@ void EnemyHandler::Update()
                     Badguys[i].texture = model[1].textures[rand()%MAX_TEXTURES];
                 break;
             }
-            Badguys[i].freq = (rand()%10)-5;
             Badguys[i].pos_y = -8;
             Badguys[i].start_x = (rand()%16) -8;
             Badguys[i].alive = true;
@@ -117,7 +122,7 @@ void LaserHandler::Draw()
                 for(int e=0;e<gEngine.Enemies.numberofbadies;e++)
                 {
                     if(Lasers[i].pos_y > (gEngine.Enemies.Badguys[e].pos_y-gEngine.Enemies.Badguys[e].size) &&
-                        Lasers[i].pos_y > (gEngine.Enemies.Badguys[e].pos_y+gEngine.Enemies.Badguys[e].size) &&
+                        Lasers[i].pos_y < (gEngine.Enemies.Badguys[e].pos_y+gEngine.Enemies.Badguys[e].size) &&
                         Lasers[i].pos_x > (gEngine.Enemies.Badguys[e].pos_x-gEngine.Enemies.Badguys[e].size) &&
                         Lasers[i].pos_x < (gEngine.Enemies.Badguys[e].pos_x+gEngine.Enemies.Badguys[e].size))
                     {
