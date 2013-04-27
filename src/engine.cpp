@@ -138,7 +138,6 @@ void LaserHandler::Draw()
 
             glPushMatrix();
 
-            glScalef(2,1,1);
             if(Lasers[i].owner != 1)
                 glRotatef(180,0,1,0);
             glTranslatef(Lasers[i].pos_x,0,Lasers[i].pos_y);
@@ -204,6 +203,9 @@ int Engine::Init()
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     float aspect = ((float)640)/480;
+        glTranslatef(0,0,-15);
+        glRotatef(90,1,0,0);
+        glColor3f(1.0,1.0,1.0);
 
     gluPerspective(45.0, aspect, 1.0, 1000.0);
 
@@ -378,10 +380,7 @@ void Engine::MainLoop()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glLoadIdentity();
-
-        glTranslatef(0,0,-15);
-        glRotatef(90,1,0,0);
-        glColor3f(1.0,1.0,1.0);
+		
 
         Enemies.Update();
         PewPew.Draw();
