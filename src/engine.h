@@ -1,6 +1,8 @@
 #ifndef __ENGINE_H
 #define __ENGINE_H
 
+#include "font.h"
+
 #include <GL/glfw.h>
 #include <GL/glu.h>
 #include <stdio.h>
@@ -24,6 +26,8 @@
 
 #define MAX_MODELS 2
 #define MAX_TEXTURES 4
+
+#define MAX_STARS 100
 
 static char LaserFiles[][40] = {
    "./artsyfartsystuff/pewpewblue.tga",
@@ -50,9 +54,9 @@ static char BaddieTextures_2[][40] = {
 
 static char BaddieTextures_1[][40] = {
     "./artsyfartsystuff/baddie1.tga",
-    "./artsyfartsystuff/baddie2.TGA",
-    "./artsyfartsystuff/baddie3.TGA",
-    "./artsyfartsystuff/baddie4.TGA"
+    "./artsyfartsystuff/baddie2.tga",
+    "./artsyfartsystuff/baddie3.tga",
+    "./artsyfartsystuff/baddie4.tga"
 };
 
 static char MusicFiles[][40] = {
@@ -70,6 +74,13 @@ static char MusicFiles[][40] = {
     "./music/12_hidden and white.wav",
     "./music/13_tunnels and docks.wav",
     "./music/14_the city's ghost.wav"
+};
+
+static char StarTextures[][40] = {
+    "./artsyfartsystuff/starpower_1.tga",
+    "./artsyfartsystuff/starpower_2.tga",
+    "./artsyfartsystuff/starpower_3.tga",
+    "./artsyfartsystuff/starpower_4.tga"
 };
 
 struct Laser
@@ -110,8 +121,19 @@ struct ModelHandler
     };
 };
 
+struct Stars
+{
+    float pos_x;
+    float pos_y;
+    float pos_z;
+
+    int texture;
+};
+
 struct Entity
 {
+    int worth;
+
     aiScene* model;
     unsigned int texture;
 
@@ -122,6 +144,7 @@ struct Entity
     bool alive;
 
     int type;
+    int attacktype;
 
     float speed;
     float pos_x;
@@ -130,10 +153,12 @@ struct Entity
     float nextattack;
     float attacktime;
 
+    float flickertimer;
     int health;
 
     void Draw();
     void Attack();
+
 
     float size;
     Entity();
@@ -154,10 +179,20 @@ class Engine
         bool Running;
 
         unsigned int Music;
+        Font defFont;
     public:
+        int level;
+        int score;
+
+        aiScene* Star;
+        unsigned int startextures[MAX_TEXTURES];
+
+        Stars Twinky[MAX_STARS];
+
         unsigned int lasersound;
         unsigned int hitsound;
         unsigned int killsound;
+        unsigned int fontimage;
 
         LaserHandler PewPew;
         EnemyHandler Enemies;
@@ -168,11 +203,13 @@ class Engine
         void DrawModel(aiScene* model, unsigned int texture);
         aiScene* LoadModel(const char* filename);
 
+        void DrawScore();
         void PlayMusic();
 
         int Init();
         void MainLoop();
         void Shutdown();
+        void DrawStars();
 };
 
 extern Engine gEngine;

@@ -60,7 +60,7 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_game_OBJECTS = main.$(OBJEXT) engine.$(OBJEXT)
+am_game_OBJECTS = main.$(OBJEXT) engine.$(OBJEXT) font.$(OBJEXT)
 game_OBJECTS = $(am_game_OBJECTS)
 game_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -210,7 +210,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CXXFLAGS = -Wall -O2 -g -I../lib/glfw/include
 AM_LDFLAGS = -L../lib/glfw/lib -lglfw -lGL -lGLU -lassimp -lopenal -lalut
-game_SOURCES = main.cpp engine.cpp
+game_SOURCES = main.cpp engine.cpp font.cpp
 all: all-am
 
 .SUFFIXES:
@@ -298,6 +298,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/engine.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/font.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 
 .cpp.o:

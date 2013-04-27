@@ -14,6 +14,8 @@ Entity::Entity()
     texture = 0;
     attacktime = 0.3f;
     nextattack = attacktime;
+    attacktype = 0;
+    worth = 5;
 
     alive = false;
 }
@@ -22,7 +24,7 @@ Laser::Laser()
 {
     pos_x = 0;
     pos_y = 0;
-    speed = 10;
+    speed = 15;
     damage = 10;
     direction = 0;
     alive = false;
@@ -47,6 +49,7 @@ void EnemyHandler::Update()
         else
         {
             int type = rand()%2;
+            int level = rand()%4;
             switch(type)
             {
                 default:
@@ -56,22 +59,27 @@ void EnemyHandler::Update()
 
                     Badguys[i].speed = 2;
                     Badguys[i].attacktime = 1;
-                    Badguys[i].health = 30;
+                    Badguys[i].health = 20*level;
                     Badguys[i].size = model[0].size;
                     Badguys[i].model = model[0].model;
-                    Badguys[i].texture = model[0].textures[rand()%MAX_TEXTURES];
+                    Badguys[i].texture = model[0].textures[level];
+                    Badguys[i].attacktype = 1;
+
+                    Badguys[i].worth = 10*(level+1);
                 break;
                 case 1:
                     Badguys[i].freq = 0;
                     Badguys[i].amp = 2;
 
-                    Badguys[i].speed = 6;
-                    Badguys[i].attacktime = 0.3f;
+                    Badguys[i].speed = 2*level;
+                    Badguys[i].attacktime = 0.5f;
 
-                    Badguys[i].health = 5;
+                    Badguys[i].health = 3;
                     Badguys[i].size = model[1].size;
                     Badguys[i].model = model[1].model;
-                    Badguys[i].texture = model[1].textures[rand()%MAX_TEXTURES];
+                    Badguys[i].texture = model[1].textures[level];
+
+                    Badguys[i].worth = 5*(level+1);
                 break;
             }
             Badguys[i].pos_y = -8;
@@ -98,7 +106,7 @@ void LaserHandler::Spawn(int owner, float x, float y, int type, int dir)
             Lasers[i].owner = owner;
             Lasers[i].direction = dir;
             Lasers[i].pos_x = x;
-            Lasers[i].pos_y = y + (0.4f * dir);
+            Lasers[i].pos_y = y + (0.6f * dir);
             Lasers[i].alive = true;
             Lasers[i].texture = textures[type];
             break;
@@ -134,7 +142,7 @@ void LaserHandler::Draw()
 
                         Lasers[i].alive = false;
                         gEngine.Enemies.Badguys[e].health -= Lasers[i].damage;
-                        
+
                         if(gEngine.Enemies.Badguys[e].health < 0)
                         {
                             pitch=rand()%30;
@@ -144,6 +152,11 @@ void LaserHandler::Draw()
                             alSourcePlay(gEngine.killsound);
 
                             gEngine.Enemies.Badguys[e].alive = false;
+                            gEngine.score += gEngine.Enemies.Badguys[e].worth;
+                        }
+                        else
+                        {
+                            gEngine.Enemies.Badguys[e].flickertimer = 0.2f;
                         }
                         break;
                     }
@@ -179,13 +192,28 @@ void Entity::Attack()
 {
     if(nextattack >= attacktime)
     {
-        gEngine.PewPew.Spawn(type, pos_x, pos_y, rand()%MAX_LASER_FILES, (type==0) ? 1 : -1); 
+        switch(attacktype)
+        {
+            case 1:
+                gEngine.PewPew.Spawn(type, pos_x-0.5f, pos_y, rand()%MAX_LASER_FILES, (type==0) ? 1 : -1); 
+                gEngine.PewPew.Spawn(type, pos_x+0.5f, pos_y, rand()%MAX_LASER_FILES, (type==0) ? 1 : -1); 
+            break;
+            default:
+                gEngine.PewPew.Spawn(type, pos_x, pos_y, rand()%MAX_LASER_FILES, (type==0) ? 1 : -1); 
+            break;
+        }
         nextattack = 0;
     }
 }
 
 void Entity::Draw()
 {
+    if(flickertimer > 0)
+    {
+        flickertimer -= gEngine.dtime;
+        glDisable(GL_TEXTURE_2D);
+    }
+
     glPushMatrix();
     glTranslatef(pos_x,0,pos_y);
     gEngine.DrawModel(model,texture);
@@ -193,6 +221,8 @@ void Entity::Draw()
 
     if(nextattack < attacktime)
         nextattack += gEngine.dtime;
+
+    glEnable(GL_TEXTURE_2D);
 }
 
 int Engine::Init()
@@ -205,7 +235,7 @@ int Engine::Init()
 
     glfwInit();
 
-    if(glfwOpenWindow(640,480,5,6,5,0,8,0,GLFW_WINDOW) != true)
+    if(glfwOpenWindow(640,480,8,8,8,0,24,8,GLFW_WINDOW) != true)
     {
         fprintf(stderr,"ohnos glfw pooped\n");
         return 0;
@@ -236,6 +266,21 @@ int Engine::Init()
     lasersound = LoadSound("./sound/laser.wav");
     hitsound = LoadSound("./sound/boom.wav");
     killsound = LoadSound("./sound/boom2.wav");
+
+    fontimage = LoadTexture("./artsyfartsystuff/font.tga");
+    defFont.Load(fontimage,512,512);
+
+    Star = LoadModel("./artsyfartsystuff/star.obj");
+    for(int i=0;i<MAX_TEXTURES;i++)
+        startextures[i] = LoadTexture(StarTextures[i]); 
+
+    for(int i=0;i<MAX_STARS;i++)
+    {
+        Twinky[i].texture = startextures[rand()%MAX_TEXTURES];
+        Twinky[i].pos_y = (rand()%64)-32;
+        Twinky[i].pos_x = (rand()%64)-32;
+        Twinky[i].pos_z = (rand()%50)+10;
+    }
 
     Player.model = LoadModel("./artsyfartsystuff/playership.obj");
     Player.texture = LoadTexture("./artsyfartsystuff/playership.tga");
@@ -395,7 +440,7 @@ void Engine::MainLoop()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glLoadIdentity();
-        
+
         glTranslatef(0,0,-15);
         glRotatef(90,1,0,0);
         glColor3f(1.0,1.0,1.0);
@@ -404,9 +449,37 @@ void Engine::MainLoop()
         PewPew.Draw();
         Player.Draw();
 
+        DrawStars();
+        DrawScore();
+
         glfwSwapBuffers();
         gEngine.Enemies.numberofbadies = badiecounter;
     }
+}
+
+void Engine::DrawStars()
+{
+    for(int i=0;i<MAX_STARS;i++)
+    {
+        glPushMatrix();
+        glTranslatef(Twinky[i].pos_x, -Twinky[i].pos_z, Twinky[i].pos_y);
+        DrawModel(Star, Twinky[i].texture); 
+        glPopMatrix();
+
+        Twinky[i].pos_y += 10 * dtime;
+
+        if(Twinky[i].pos_y > 16)
+        {
+            Twinky[i].pos_x = (rand()%64)-32;
+            Twinky[i].pos_y = -16;
+            Twinky[i].pos_z = (rand()%50)+10;
+        }
+    }
+}
+
+void Engine::DrawScore()
+{
+    glPrint(&defFont,3,3,"SCORE: %d", score);
 }
 
 void Engine::Shutdown()
