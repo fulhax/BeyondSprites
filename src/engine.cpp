@@ -30,7 +30,7 @@ Laser::Laser()
 
 void EnemyHandler::Update()
 {
-    for(int i=0;i<MAX_BADIES;i++)
+    for(int i=0;i<numberofbadies;i++)
     {
         if(Badguys[i].alive)
         {
@@ -38,25 +38,36 @@ void EnemyHandler::Update()
                 Badguys[i].alive = false;
 
             Badguys[i].pos_y += Badguys[i].speed * gEngine.dtime;
+            Badguys[i].pos_x = Badguys[i].start_x + sin(2.0f*PI*Badguys[i].freq);
+            Badguys[i].freq += 1 * gEngine.dtime;
+
             Badguys[i].Attack();
             Badguys[i].Draw();
         }
         else
         {
+            int type = rand()%2;
+            switch(type)
+            {
+                default:
+                    Badguys[i].speed = (rand()%5)+5;
+                    Badguys[i].attacktime = ((rand()%100) * 0.01f) + 0.2f;
+
+                    Badguys[i].health = 10;
+                    Badguys[i].size = model[0].size;
+                    Badguys[i].model = model[0].model;
+                    Badguys[i].texture = model[0].textures[rand()%MAX_TEXTURES_1];
+                break;
+            }
+            Badguys[i].freq = (rand()%10)-5;
             Badguys[i].pos_y = -8;
-            Badguys[i].pos_x = (rand()%16) -8;
-
-            Badguys[i].speed = (rand()%5)+5;
-            Badguys[i].attacktime = ((rand()%100) * 0.01f) + 0.2f;
-
-            Badguys[i].model = model;
-            Badguys[i].texture = texture;
+            Badguys[i].start_x = (rand()%16) -8;
             Badguys[i].alive = true;
         }
     } 
 }
 
-void LaserHandler::Spawn(float x, float y, int type, int dir)
+void LaserHandler::Spawn(int owner, float x, float y, int type, int dir)
 {
     static float pitch=0;
 
@@ -70,6 +81,7 @@ void LaserHandler::Spawn(float x, float y, int type, int dir)
             alSourcef(gEngine.lasersound, AL_PITCH, pitch);
             alSourcePlay(gEngine.lasersound);
 
+            Lasers[i].owner = owner;
             Lasers[i].direction = dir;
             Lasers[i].pos_x = x;
             Lasers[i].pos_y = y + (0.4f * dir);
@@ -82,6 +94,8 @@ void LaserHandler::Spawn(float x, float y, int type, int dir)
 
 void LaserHandler::Draw()
 {
+    static float pitch=0;
+
     for(int i=0;i<MAX_LASER;i++)
     {
         if(Lasers[i].alive)
@@ -89,7 +103,44 @@ void LaserHandler::Draw()
             if(Lasers[i].pos_y > 6 || Lasers[i].pos_y < -6)
                 Lasers[i].alive = false;
 
+            if(Lasers[i].owner == 1)
+            {
+                for(int e=0;e<gEngine.Enemies.numberofbadies;e++)
+                {
+                    if(Lasers[i].pos_y > (gEngine.Enemies.Badguys[e].pos_y-gEngine.Enemies.Badguys[e].size) &&
+                        Lasers[i].pos_y > (gEngine.Enemies.Badguys[e].pos_y+gEngine.Enemies.Badguys[e].size) &&
+                        Lasers[i].pos_x > (gEngine.Enemies.Badguys[e].pos_x-gEngine.Enemies.Badguys[e].size) &&
+                        Lasers[i].pos_x < (gEngine.Enemies.Badguys[e].pos_x+gEngine.Enemies.Badguys[e].size))
+                    {
+                        pitch=rand()%30;
+                        pitch=pitch/10+0.85f;
+
+                        alSourcef(gEngine.hitsound, AL_PITCH, pitch);
+                        alSourcePlay(gEngine.hitsound);
+
+                        Lasers[i].alive = false;
+                        gEngine.Enemies.Badguys[e].health -= Lasers[i].damage;
+                        
+                        if(gEngine.Enemies.Badguys[e].health < 0)
+                        {
+                            pitch=rand()%30;
+                            pitch=pitch/10+0.85f;
+
+                            alSourcef(gEngine.killsound, AL_PITCH, pitch);
+                            alSourcePlay(gEngine.killsound);
+
+                            gEngine.Enemies.Badguys[e].alive = false;
+                        }
+                        break;
+                    }
+                }
+            }
+
             glPushMatrix();
+
+            glScalef(2,1,1);
+            if(Lasers[i].owner != 1)
+                glRotatef(180,0,1,0);
             glTranslatef(Lasers[i].pos_x,0,Lasers[i].pos_y);
             Lasers[i].pos_y += (Lasers[i].direction * Lasers[i].speed * gEngine.dtime);
             gEngine.DrawModel(model, Lasers[i].texture);
@@ -115,11 +166,9 @@ void Entity::Attack()
 {
     if(nextattack >= attacktime)
     {
-        gEngine.PewPew.Spawn(pos_x, pos_y, rand()%MAX_LASER_FILES, (type==0) ? 1 : -1); 
+        gEngine.PewPew.Spawn(type, pos_x, pos_y, rand()%MAX_LASER_FILES, (type==0) ? 1 : -1); 
         nextattack = 0;
     }
-
-    printf("wtf, %f, %f\n",nextattack,attacktime);
 }
 
 void Entity::Draw()
@@ -135,6 +184,7 @@ void Entity::Draw()
 
 int Engine::Init()
 {
+    gEngine.Enemies.numberofbadies = 0;
     int t = time(0);
     srand(t);
     Music = 0;
@@ -148,6 +198,7 @@ int Engine::Init()
         return 0;
     }
 
+    glfwSwapInterval(0);
     glViewport(0,0,640,480);
 
     glMatrixMode(GL_PROJECTION);
@@ -170,35 +221,24 @@ int Engine::Init()
     glfwSetWindowSizeCallback(handleResize);
 
     lasersound = LoadSound("./sound/laser.wav");
+    hitsound = LoadSound("./sound/boom.wav");
+    killsound = LoadSound("./sound/boom2.wav");
 
     Player.model = LoadModel("./artsyfartsystuff/playership.obj");
     Player.texture = LoadTexture("./artsyfartsystuff/playership.tga");
+
     Player.type = 1;
     Player.pos_y = 5;
     Player.alive = true;
 
-    Enemies.model = LoadModel("./artsyfartsystuff/playership.obj");
-    Enemies.texture = LoadTexture("./artsyfartsystuff/playership.tga");
+    Enemies.model[0].model = LoadModel("./artsyfartsystuff/baddie1.obj");
+
+    for(int i=0;i<MAX_TEXTURES_1;i++)
+        Enemies.model[0].textures[i] = LoadTexture(BaddieFirstTextures[i]);
 
     for(int i=0;i<MAX_LASER_FILES;i++)
         PewPew.textures[i] = LoadTexture(LaserFiles[i]);
     PewPew.model = LoadModel("./artsyfartsystuff/pewpewlasers.obj");
-
-/*
- *    unsigned int atest;
- *    atest = LoadSound("./Jump.wav");
- *
- *    float pitch=0;
- *
- *    for(int i=0;i < 10;i++)
- *    {
- *        pitch=rand()%30;
- *        pitch=pitch/10+0.85f;
- *
- *        alSourcef(atest, AL_PITCH, pitch);
- *        alSourcePlay(atest);
- *    }
- */
 
     Running = true;   
     return 1;
@@ -307,7 +347,9 @@ void Engine::DrawModel(aiScene* model, unsigned int texture)
 void Engine::MainLoop()
 {
     static float oldtime = glfwGetTime();
+    static float badiecounter = 1;
     float currtime = 0;
+
     while(Running)
     {
         PlayMusic();
@@ -315,7 +357,9 @@ void Engine::MainLoop()
         currtime = glfwGetTime();
         dtime = currtime - oldtime;
         oldtime = currtime;
-
+        if((int)badiecounter < MAX_BADIES)
+            badiecounter += 0.2f * dtime;
+        
         if(glfwGetKey(GLFW_KEY_ESC) == GLFW_PRESS)
             Running = false;
 
@@ -344,6 +388,7 @@ void Engine::MainLoop()
         Player.Draw();
 
         glfwSwapBuffers();
+        gEngine.Enemies.numberofbadies = badiecounter;
     }
 }
 

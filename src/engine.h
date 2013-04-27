@@ -4,6 +4,7 @@
 #include <GL/glfw.h>
 #include <GL/glu.h>
 #include <stdio.h>
+#include <math.h>
 
 #include <assimp/cimport.h>
 #include <assimp/scene.h>
@@ -13,10 +14,18 @@
 #include <AL/alc.h>
 #include <AL/alut.h>
 
-#define MAX_BADIES 10
+#define PI 3.14f
+
+#define MAX_BADIES 75
 #define MAX_LASER 256
+
 #define MAX_MUSIC 13
 #define MAX_LASER_FILES 8
+
+#define MAX_MODELS 1
+#define MAX_TEXTURES 4
+
+#define MAX_TEXTURES_1 4
 
 static char LaserFiles[][40] = {
    "./artsyfartsystuff/pewpewblue.tga",
@@ -27,6 +36,18 @@ static char LaserFiles[][40] = {
    "./artsyfartsystuff/pewpeworange.tga",
    "./artsyfartsystuff/pewpewpink.tga",
    "./artsyfartsystuff/pewpewred.tga"
+};
+
+static char BaddieModels[][40] = {
+    "./artsyfartsystuff/baddie1.obj",
+    "./artsyfartstytuff/baddie2.obj"
+};
+
+static char BaddieFirstTextures[][40] = {
+    "./artsyfartsystuff/baddie1.tga",
+    "./artsyfartsystuff/baddie2.TGA",
+    "./artsyfartsystuff/baddie3.TGA",
+    "./artsyfartsystuff/baddie4.TGA"
 };
 
 static char MusicFiles[][40] = {
@@ -57,6 +78,7 @@ struct Laser
     int direction;
 
     unsigned int texture;
+    int owner;
 
     Laser();
 };
@@ -67,12 +89,30 @@ struct LaserHandler
     unsigned int textures[MAX_LASER_FILES];
     Laser Lasers[MAX_LASER];
 
-    void Spawn(float x, float y, int type, int dir);
+    void Spawn(int owner,float x, float y, int type, int dir);
     void Draw();
+};
+
+struct ModelHandler
+{
+    float size;
+    aiScene* model;
+    unsigned int textures[MAX_TEXTURES];
+
+    ModelHandler() {
+        model = 0;
+        size = 0.5f;
+    };
 };
 
 struct Entity
 {
+    aiScene* model;
+    unsigned int texture;
+
+    float start_x;
+    float freq;
+
     bool alive;
 
     int type;
@@ -85,21 +125,19 @@ struct Entity
     float attacktime;
 
     int health;
-    aiScene* model;
-
-    unsigned int texture;
 
     void Draw();
     void Attack();
 
+    float size;
     Entity();
 };
 
 struct EnemyHandler
 {
-    aiScene* model;
-    unsigned int texture;
+    int numberofbadies;
 
+    ModelHandler model[MAX_MODELS];
     Entity Badguys[MAX_BADIES];
     void Update();
 };
@@ -112,6 +150,9 @@ class Engine
         unsigned int Music;
     public:
         unsigned int lasersound;
+        unsigned int hitsound;
+        unsigned int killsound;
+
         LaserHandler PewPew;
         EnemyHandler Enemies;
 
