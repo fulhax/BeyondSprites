@@ -1,5 +1,4 @@
 #include "engine.h"
-#include <time.h>
 
 Engine gEngine;
 
@@ -9,11 +8,13 @@ Entity::Entity()
     pos_x = 0;
     pos_y = 0;
     speed = 10;
-    health = 100;
+    health = 10;
     model = 0;
     texture = 0;
     attacktime = 0.2f;
     nextattack = attacktime;
+
+    alive = false;
 }
 
 Laser::Laser()
@@ -26,12 +27,48 @@ Laser::Laser()
     alive = false;
 }
 
+void EnemyHandler::Update()
+{
+    for(int i=0;i<MAX_BADIES;i++)
+    {
+        if(Badguys[i].alive)
+        {
+            if(Badguys[i].pos_y > 8 || Badguys[i].pos_y < -8)
+                Badguys[i].alive = false;
+
+            Badguys[i].pos_y += Badguys[i].speed * gEngine.dtime;
+            Badguys[i].Attack();
+            Badguys[i].Draw();
+        }
+        else
+        {
+            Badguys[i].pos_y = -8;
+            Badguys[i].pos_x = (rand()%16) -8;
+
+            Badguys[i].speed = (rand()%5)+5;
+            Badguys[i].attacktime = ((rand()%100) * 0.01f) + 0.2f;
+
+            Badguys[i].model = model;
+            Badguys[i].texture = texture;
+            Badguys[i].alive = true;
+        }
+    } 
+}
+
 void LaserHandler::Spawn(float x, float y, int type, int dir)
 {
+    static float pitch=0;
+
     for(int i=0;i<MAX_LASER;i++) 
     {
         if(!Lasers[i].alive)
         {
+            pitch=rand()%30;
+            pitch=pitch/10+0.85f;
+
+            alSourcef(gEngine.lasersound, AL_PITCH, pitch);
+            alSourcePlay(gEngine.lasersound);
+
             Lasers[i].direction = dir;
             Lasers[i].pos_x = x;
             Lasers[i].pos_y = y + (0.4f * dir);
@@ -75,16 +112,8 @@ void GLFWCALL handleResize(int width, int height)
 
 void Entity::Attack()
 {
-    static float pitch=0;
-
     if(nextattack >= attacktime)
     {
-        pitch=rand()%30;
-        pitch=pitch/10+0.85f;
-
-        alSourcef(lasersound, AL_PITCH, pitch);
-        alSourcePlay(lasersound);
-
         gEngine.PewPew.Spawn(pos_x, pos_y, rand()%MAX_LASER_FILES, (type==0) ? 1 : -1); 
         nextattack = 0;
     }
@@ -105,9 +134,7 @@ void Entity::Draw()
 
 int Engine::Init()
 {
-	time_t t=time(0);
-
-    srand((int)t);
+    srand(time(0));
     Music = 0;
     Running = false;
 
@@ -140,11 +167,16 @@ int Engine::Init()
 
     glfwSetWindowSizeCallback(handleResize);
 
-    Player.lasersound = LoadSound("./sound/laser.wav");
+    lasersound = LoadSound("./sound/laser.wav");
+
     Player.model = LoadModel("./artsyfartsystuff/playership.obj");
     Player.texture = LoadTexture("./artsyfartsystuff/playership.tga");
     Player.type = 1;
     Player.pos_y = 5;
+    Player.alive = true;
+
+    Enemies.model = LoadModel("./artsyfartsystuff/playership.obj");
+    Enemies.texture = LoadTexture("./artsyfartsystuff/playership.tga");
 
     for(int i=0;i<MAX_LASER_FILES;i++)
         PewPew.textures[i] = LoadTexture(LaserFiles[i]);
@@ -305,6 +337,7 @@ void Engine::MainLoop()
         glRotatef(90,1,0,0);
         glColor3f(1.0,1.0,1.0);
 
+        Enemies.Update();
         PewPew.Draw();
         Player.Draw();
 

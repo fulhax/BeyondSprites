@@ -13,6 +13,7 @@
 #include <AL/alc.h>
 #include <AL/alut.h>
 
+#define MAX_BADIES 10
 #define MAX_LASER 256
 #define MAX_MUSIC 13
 #define MAX_LASER_FILES 8
@@ -72,6 +73,8 @@ struct LaserHandler
 
 struct Entity
 {
+    bool alive;
+
     int type;
 
     float speed;
@@ -85,12 +88,20 @@ struct Entity
     aiScene* model;
 
     unsigned int texture;
-    unsigned int lasersound;
 
     void Draw();
     void Attack();
 
     Entity();
+};
+
+struct EnemyHandler
+{
+    aiScene* model;
+    unsigned int texture;
+
+    Entity Badguys[MAX_BADIES];
+    void Update();
 };
 
 class Engine
@@ -100,7 +111,9 @@ class Engine
 
         unsigned int Music;
     public:
+        unsigned int lasersound;
         LaserHandler PewPew;
+        EnemyHandler Enemies;
 
         float dtime;
         unsigned int LoadSound(const char* filename);
