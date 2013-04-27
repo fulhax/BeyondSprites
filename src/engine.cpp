@@ -1,4 +1,5 @@
 #include "engine.h"
+#include <time.h>
 
 Engine gEngine;
 
@@ -134,7 +135,8 @@ void Entity::Draw()
 
 int Engine::Init()
 {
-    srand(time(0));
+    int t = time(0);
+    srand(t);
     Music = 0;
     Running = false;
 
