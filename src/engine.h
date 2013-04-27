@@ -28,6 +28,7 @@
 #define MAX_TEXTURES 4
 
 #define MAX_STARS 100
+#define MAX_POWERUP 5
 
 static char LaserFiles[][40] = {
    "./artsyfartsystuff/pewpewblue.tga",
@@ -83,6 +84,18 @@ static char StarTextures[][40] = {
     "./artsyfartsystuff/starpower_4.tga"
 };
 
+static char PowerupTextures[][40] = {
+    "./artsyfartsystuff/powerup.tga",
+    "./artsyfartsystuff/powerupshield.tga"
+};
+
+static char ShieldTextures[][40] = {
+    "./artsyfartsystuff/shields_1.tga",
+    "./artsyfartsystuff/shields_2.tga",
+    "./artsyfartsystuff/shields_3.tga",
+    "./artsyfartsystuff/shields_4.tga"
+};
+
 struct Laser
 {
     bool alive;
@@ -105,7 +118,7 @@ struct LaserHandler
     unsigned int textures[MAX_LASER_FILES];
     Laser Lasers[MAX_LASER];
 
-    void Spawn(int owner,float x, float y, int type, int dir);
+    void Spawn(int owner,float x, float y, int level, int dir);
     void Draw();
 };
 
@@ -127,11 +140,14 @@ struct Stars
     float pos_y;
     float pos_z;
 
+    float rot;
+
     int texture;
 };
 
 struct Entity
 {
+    int level;
     int worth;
 
     aiScene* model;
@@ -173,25 +189,49 @@ struct EnemyHandler
     void Update();
 };
 
-class Engine
+struct PowerUp
+{
+    PowerUp() { alive = false; }
+    bool alive;
+    int type;
+
+    float pos_x;
+    float pos_y;
+    float rot;
+
+    float deathtime;
+};
+
+struct Engine
 {
         Entity Player;
         bool Running;
 
         unsigned int Music;
         Font defFont;
-    public:
-        int level;
+        float shield_anim;
+
+        float shield;
         int score;
+
+        aiScene* Shield;
+        unsigned int shieldtextures[MAX_TEXTURES];
+
+        aiScene* Powerup;
+        unsigned int poweruptextures[2];
 
         aiScene* Star;
         unsigned int startextures[MAX_TEXTURES];
 
         Stars Twinky[MAX_STARS];
+        PowerUp Boost[MAX_POWERUP];
 
         unsigned int lasersound;
         unsigned int hitsound;
         unsigned int killsound;
+        unsigned int powerupsound;
+        unsigned int shieldupsound;
+
         unsigned int fontimage;
 
         LaserHandler PewPew;
@@ -210,6 +250,9 @@ class Engine
         void MainLoop();
         void Shutdown();
         void DrawStars();
+        void DrawPowerup();
+        void DrawShield();
+        void Reset();
 };
 
 extern Engine gEngine;

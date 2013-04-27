@@ -24,18 +24,34 @@ Laser::Laser()
 {
     pos_x = 0;
     pos_y = 0;
-    speed = 15;
-    damage = 10;
+    speed = 6;
+    damage = 6;
     direction = 0;
     alive = false;
 }
 
 void EnemyHandler::Update()
 {
+    static float pitch = 0;
     for(int i=0;i<numberofbadies;i++)
     {
         if(Badguys[i].alive)
         {
+            if(Badguys[i].pos_y+Badguys[i].size > gEngine.Player.pos_y-0.3f &&
+                Badguys[i].pos_y-Badguys[i].size < gEngine.Player.pos_y+0.3f &&
+                Badguys[i].pos_x+Badguys[i].size > gEngine.Player.pos_x-0.3f &&
+                Badguys[i].pos_x-Badguys[i].size < gEngine.Player.pos_x+0.3f)
+            {
+                pitch=rand()%30;
+                pitch=pitch/10+0.85f;
+
+                alSourcef(gEngine.killsound, AL_PITCH, pitch);
+                alSourcePlay(gEngine.killsound);
+
+                gEngine.Player.health -= Badguys[i].health;
+                Badguys[i].alive = false;
+            }
+
             if(Badguys[i].pos_y > 8 || Badguys[i].pos_y < -8)
                 Badguys[i].alive = false;
 
@@ -64,8 +80,9 @@ void EnemyHandler::Update()
                     Badguys[i].model = model[0].model;
                     Badguys[i].texture = model[0].textures[level];
                     Badguys[i].attacktype = 1;
-
                     Badguys[i].worth = 10*(level+1);
+
+                    Badguys[i].level = rand()%MAX_LASER_FILES; // Laser power level
                 break;
                 case 1:
                     Badguys[i].freq = 0;
@@ -83,13 +100,13 @@ void EnemyHandler::Update()
                 break;
             }
             Badguys[i].pos_y = -8;
-            Badguys[i].start_x = (rand()%16) -8;
+            Badguys[i].start_x = (rand()%12) -6;
             Badguys[i].alive = true;
         }
     } 
 }
 
-void LaserHandler::Spawn(int owner, float x, float y, int type, int dir)
+void LaserHandler::Spawn(int owner, float x, float y, int level, int dir)
 {
     static float pitch=0;
 
@@ -108,7 +125,11 @@ void LaserHandler::Spawn(int owner, float x, float y, int type, int dir)
             Lasers[i].pos_x = x;
             Lasers[i].pos_y = y + (0.6f * dir);
             Lasers[i].alive = true;
-            Lasers[i].texture = textures[type];
+            Lasers[i].texture = textures[level];
+
+            Lasers[i].damage = 3*(level+1);
+            Lasers[i].speed = 3*(level+1);
+
             break;
         }
     } 
@@ -129,6 +150,7 @@ void LaserHandler::Draw()
             {
                 for(int e=0;e<gEngine.Enemies.numberofbadies;e++)
                 {
+
                     if(Lasers[i].pos_y > (gEngine.Enemies.Badguys[e].pos_y-gEngine.Enemies.Badguys[e].size) &&
                         Lasers[i].pos_y < (gEngine.Enemies.Badguys[e].pos_y+gEngine.Enemies.Badguys[e].size) &&
                         Lasers[i].pos_x > (gEngine.Enemies.Badguys[e].pos_x-gEngine.Enemies.Badguys[e].size) &&
@@ -153,12 +175,60 @@ void LaserHandler::Draw()
 
                             gEngine.Enemies.Badguys[e].alive = false;
                             gEngine.score += gEngine.Enemies.Badguys[e].worth;
+
+                            int loot = rand()%10000;
+                            if(loot > 7000)
+                            {
+                                for(int l=0;l<MAX_POWERUP;l++)
+                                {
+                                    if(!gEngine.Boost[l].alive)
+                                    {
+                                        gEngine.Boost[l].deathtime = 10.0f;
+                                        gEngine.Boost[l].type = rand()%2;
+                                        gEngine.Boost[l].pos_x = gEngine.Enemies.Badguys[e].pos_x;
+                                        gEngine.Boost[l].pos_y = gEngine.Enemies.Badguys[e].pos_y;
+                                        gEngine.Boost[l].alive = true;
+                                        break;
+                                    }
+                                }
+                            }
                         }
                         else
                         {
                             gEngine.Enemies.Badguys[e].flickertimer = 0.2f;
                         }
                         break;
+                    }
+                }
+            }
+            else
+            {
+                if(Lasers[i].pos_y > (gEngine.Player.pos_y-0.3f) &&
+                    Lasers[i].pos_y < (gEngine.Player.pos_y+0.3f) &&
+                    Lasers[i].pos_x > (gEngine.Player.pos_x-0.3f) &&
+                    Lasers[i].pos_x < (gEngine.Player.pos_x+0.3f))
+                {
+                    pitch=rand()%30;
+                    pitch=pitch/10+0.85f;
+
+                    alSourcef(gEngine.hitsound, AL_PITCH, pitch);
+                    alSourcePlay(gEngine.hitsound);
+
+                    Lasers[i].alive = false;
+
+                    if(gEngine.shield > 0)
+                    {
+                        gEngine.shield -= (float)Lasers[i].damage*0.01f;
+                        if(gEngine.shield < 0)
+                            gEngine.shield = 0;
+                    }
+                    else
+                    {
+                        gEngine.Player.health -= Lasers[i].damage;
+                        if(gEngine.Player.health <= 0)
+                        {
+                            // TODO: Kill player
+                        }
                     }
                 }
             }
@@ -194,12 +264,17 @@ void Entity::Attack()
     {
         switch(attacktype)
         {
+            case 2:
+                gEngine.PewPew.Spawn(type, pos_x-0.5f, pos_y, level, (type==0) ? 1 : -1); 
+                gEngine.PewPew.Spawn(type, pos_x+0.5f, pos_y, level, (type==0) ? 1 : -1); 
+                gEngine.PewPew.Spawn(type, pos_x, pos_y, level, (type==0) ? 1 : -1); 
+            break; 
             case 1:
-                gEngine.PewPew.Spawn(type, pos_x-0.5f, pos_y, rand()%MAX_LASER_FILES, (type==0) ? 1 : -1); 
-                gEngine.PewPew.Spawn(type, pos_x+0.5f, pos_y, rand()%MAX_LASER_FILES, (type==0) ? 1 : -1); 
+                gEngine.PewPew.Spawn(type, pos_x-0.5f, pos_y, level, (type==0) ? 1 : -1); 
+                gEngine.PewPew.Spawn(type, pos_x+0.5f, pos_y, level, (type==0) ? 1 : -1); 
             break;
             default:
-                gEngine.PewPew.Spawn(type, pos_x, pos_y, rand()%MAX_LASER_FILES, (type==0) ? 1 : -1); 
+                gEngine.PewPew.Spawn(type, pos_x, pos_y, level, (type==0) ? 1 : -1); 
             break;
         }
         nextattack = 0;
@@ -263,23 +338,43 @@ int Engine::Init()
 
     glfwSetWindowSizeCallback(handleResize);
 
+    /* Begin awesome resourcehandling */
+
     lasersound = LoadSound("./sound/laser.wav");
     hitsound = LoadSound("./sound/boom.wav");
     killsound = LoadSound("./sound/boom2.wav");
 
+    powerupsound = LoadSound("./sound/powerup.wav");
+    shieldupsound = LoadSound("./sound/shieldup.wav");
+
     fontimage = LoadTexture("./artsyfartsystuff/font.tga");
     defFont.Load(fontimage,512,512);
 
+    Powerup = LoadModel("./artsyfartsystuff/powerup.obj");
     Star = LoadModel("./artsyfartsystuff/star.obj");
+    Shield = LoadModel("./artsyfartsystuff/shield.obj");
+    PewPew.model = LoadModel("./artsyfartsystuff/pewpewlasers.obj");
+    Enemies.model[0].model = LoadModel("./artsyfartsystuff/baddie1.obj");
+    Enemies.model[1].model = LoadModel("./artsyfartsystuff/baddie2.obj");
+    Enemies.model[1].size = 0.40f;
+
+    for(int i=0;i<2;i++)
+        poweruptextures[i] = LoadTexture(PowerupTextures[i]);
+
     for(int i=0;i<MAX_TEXTURES;i++)
+    {
+        shieldtextures[i] = LoadTexture(ShieldTextures[i]);
         startextures[i] = LoadTexture(StarTextures[i]); 
+        Enemies.model[0].textures[i] = LoadTexture(BaddieTextures_1[i]);
+        Enemies.model[1].textures[i] = LoadTexture(BaddieTextures_2[i]);
+    }
 
     for(int i=0;i<MAX_STARS;i++)
     {
         Twinky[i].texture = startextures[rand()%MAX_TEXTURES];
         Twinky[i].pos_y = (rand()%64)-32;
         Twinky[i].pos_x = (rand()%64)-32;
-        Twinky[i].pos_z = (rand()%50)+10;
+        Twinky[i].pos_z = (rand()%55)+1;
     }
 
     Player.model = LoadModel("./artsyfartsystuff/playership.obj");
@@ -288,19 +383,14 @@ int Engine::Init()
     Player.type = 1;
     Player.pos_y = 5;
     Player.alive = true;
-
-    Enemies.model[0].model = LoadModel("./artsyfartsystuff/baddie1.obj");
-    Enemies.model[1].model = LoadModel("./artsyfartsystuff/baddie2.obj");
-    Enemies.model[1].size = 0.40f;
-
-    for(int i=0;i<MAX_TEXTURES;i++)
-        Enemies.model[0].textures[i] = LoadTexture(BaddieTextures_1[i]);
-    for(int i=0;i<MAX_TEXTURES;i++)
-        Enemies.model[1].textures[i] = LoadTexture(BaddieTextures_2[i]);
+    Player.health = 100;
+    Player.level = 0;
+   
+    shield_anim = 0;
+    shield = 1.0f;
 
     for(int i=0;i<MAX_LASER_FILES;i++)
         PewPew.textures[i] = LoadTexture(LaserFiles[i]);
-    PewPew.model = LoadModel("./artsyfartsystuff/pewpewlasers.obj");
 
     Running = true;   
     return 1;
@@ -406,6 +496,10 @@ void Engine::DrawModel(aiScene* model, unsigned int texture)
     }
 }
 
+void Engine::Reset()
+{
+}
+
 void Engine::MainLoop()
 {
     static float oldtime = glfwGetTime();
@@ -425,18 +519,24 @@ void Engine::MainLoop()
         if(glfwGetKey(GLFW_KEY_ESC) == GLFW_PRESS)
             Running = false;
 
-        if(glfwGetKey(GLFW_KEY_UP) == GLFW_PRESS)
-            Player.pos_y = (Player.pos_y > -6) ? Player.pos_y - Player.speed * dtime : Player.pos_y;
-        else if(glfwGetKey(GLFW_KEY_DOWN) == GLFW_PRESS)
-            Player.pos_y = (Player.pos_y < 6) ? Player.pos_y + Player.speed * dtime : Player.pos_y;
+        if(Player.health > 0)
+        {
+            if(glfwGetKey(GLFW_KEY_UP) == GLFW_PRESS)
+                Player.pos_y = (Player.pos_y > -6) ? Player.pos_y - Player.speed * dtime : Player.pos_y;
+            else if(glfwGetKey(GLFW_KEY_DOWN) == GLFW_PRESS)
+                Player.pos_y = (Player.pos_y < 6) ? Player.pos_y + Player.speed * dtime : Player.pos_y;
 
-        if(glfwGetKey(GLFW_KEY_LEFT) == GLFW_PRESS)
-            Player.pos_x = (Player.pos_x > -8) ? Player.pos_x - Player.speed * dtime : Player.pos_x;
-        else if(glfwGetKey(GLFW_KEY_RIGHT) == GLFW_PRESS)
-            Player.pos_x = (Player.pos_x < 8) ? Player.pos_x + Player.speed * dtime : Player.pos_x;
+            if(glfwGetKey(GLFW_KEY_LEFT) == GLFW_PRESS)
+                Player.pos_x = (Player.pos_x > -8) ? Player.pos_x - Player.speed * dtime : Player.pos_x;
+            else if(glfwGetKey(GLFW_KEY_RIGHT) == GLFW_PRESS)
+                Player.pos_x = (Player.pos_x < 8) ? Player.pos_x + Player.speed * dtime : Player.pos_x;
 
-        if(glfwGetKey(GLFW_KEY_SPACE) == GLFW_PRESS)
-            Player.Attack();
+            if(glfwGetKey(GLFW_KEY_SPACE) == GLFW_PRESS)
+                Player.Attack();
+
+            if(glfwGetKey('r') == GLFW_PRESS)
+                Reset();
+        }
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glLoadIdentity();
@@ -447,13 +547,79 @@ void Engine::MainLoop()
 
         Enemies.Update();
         PewPew.Draw();
-        Player.Draw();
 
+        if(Player.health > 0)
+        {
+            DrawShield();
+            Player.Draw();
+        }
+
+        DrawPowerup();
         DrawStars();
         DrawScore();
 
         glfwSwapBuffers();
         gEngine.Enemies.numberofbadies = badiecounter;
+    }
+}
+
+void Engine::DrawShield()
+{
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glColor4f(1,shield,shield,shield);
+    glPushMatrix();
+    glTranslatef(Player.pos_x,0,Player.pos_y);
+    DrawModel(Shield, shieldtextures[0]);
+    glPopMatrix();
+    glDisable(GL_BLEND);
+    glColor4f(1,1,1,1);
+}
+
+void Engine::DrawPowerup()
+{
+    for(int i=0;i<MAX_POWERUP;i++)
+    {
+        if(Boost[i].alive)
+        {
+            glPushMatrix();
+            glTranslatef(Boost[i].pos_x,0,Boost[i].pos_y);
+            glRotatef(Boost[i].rot,0,0,1);
+            DrawModel(Powerup, poweruptextures[Boost[i].type]);
+            glPopMatrix();
+        
+            Boost[i].rot += 100 * dtime;
+
+            Boost[i].deathtime -= dtime;
+            if(Boost[i].deathtime < 0)
+                Boost[i].alive = false;
+
+            if(Boost[i].pos_y > Player.pos_y-0.3f &&
+                Boost[i].pos_y < Player.pos_y+0.3f &&
+                Boost[i].pos_x > Player.pos_x-0.3f &&
+                Boost[i].pos_x < Player.pos_x+0.3f)
+            {
+                switch(Boost[i].type)
+                {
+                    default:
+                    case 0:
+                        alSourcePlay(powerupsound);
+                        Player.level += (Player.level<MAX_LASER_FILES-1)?1:0;
+                        
+                        if(Player.level == 4)
+                            Player.attacktype = 1;
+                        if(Player.level == MAX_LASER_FILES)
+                            Player.attacktype = 2;
+                        Player.attacktime -= (0.002f*Player.level);
+                        break;
+                    case 1:
+                        alSourcePlay(shieldupsound);
+                        shield += (shield<1.0f)?0.1f:0.0f;
+                        break;
+                }
+                Boost[i].alive = false;
+            }
+        }
     }
 }
 
@@ -463,23 +629,39 @@ void Engine::DrawStars()
     {
         glPushMatrix();
         glTranslatef(Twinky[i].pos_x, -Twinky[i].pos_z, Twinky[i].pos_y);
+        glRotatef(Twinky[i].rot,1,1,1);
         DrawModel(Star, Twinky[i].texture); 
         glPopMatrix();
 
+        Twinky[i].rot += 50 * dtime;
         Twinky[i].pos_y += 10 * dtime;
 
         if(Twinky[i].pos_y > 16)
         {
             Twinky[i].pos_x = (rand()%64)-32;
             Twinky[i].pos_y = -16;
-            Twinky[i].pos_z = (rand()%50)+10;
+            Twinky[i].pos_z = (rand()%55)+1;
         }
     }
 }
 
 void Engine::DrawScore()
 {
-    glPrint(&defFont,3,3,"SCORE: %d", score);
+    glPrint(&defFont,3,0,  "SCORE : %d", score);
+
+    if(Player.level < (MAX_LASER_FILES-1))
+        glPrint(&defFont,3,25,"POWER : %d", Player.level);
+    else
+        glPrint(&defFont,3,25,"POWER : MAX");
+
+    glPrint(&defFont,3,50,"SHIELD: %d%%", (int)(shield*100));
+    glPrint(&defFont,3,75,"HEALTH: %d%", Player.health);
+
+    if(Player.health <= 0)
+    {
+        glPrint(&defFont, 96, 240,"YOU AR DEFEATED!");
+        glPrint(&defFont, 96, 285,"Press R to restart");
+    }
 }
 
 void Engine::Shutdown()
