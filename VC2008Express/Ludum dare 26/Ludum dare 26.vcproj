@@ -41,7 +41,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/MP"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\sdks\glfw-2.7.8.bin.WIN32\include&quot;"
+				AdditionalIncludeDirectories="&quot;C:\sdks\glfw-2.7.8.bin.WIN32\include&quot;;&quot;C:\sdks\assimp--3.0.1270-sdk\include&quot;;&quot;C:\sdks\OpenAL 1.1 SDK\include&quot;;&quot;C:\sdks\freealut-1.1.0-bin\include&quot;"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -59,8 +59,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="GLFW.lib opengl32.lib glu32.lib"
-				AdditionalLibraryDirectories="&quot;C:\sdks\glfw-2.7.8.bin.WIN32\lib-msvc90&quot;"
+				AdditionalDependencies="GLFW.lib opengl32.lib glu32.lib assimp.lib alut.lib OpenAL32.lib"
+				AdditionalLibraryDirectories="&quot;C:\sdks\glfw-2.7.8.bin.WIN32\lib-msvc90&quot;;&quot;C:\sdks\assimp--3.0.1270-sdk\lib\assimp_debug-dll_win32&quot;;&quot;C:\sdks\OpenAL 1.1 SDK\libs\Win32&quot;;&quot;C:\sdks\freealut-1.1.0-bin\lib&quot;"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
 			/>
@@ -166,6 +166,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\src\engine.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\main.cpp"
 				>
 			</File>
@@ -175,6 +179,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\src\engine.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
