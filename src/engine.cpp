@@ -137,11 +137,9 @@ void LaserHandler::Draw()
             }
 
             glPushMatrix();
-
-            glScalef(2,1,1);
+            glTranslatef(Lasers[i].pos_x,0,Lasers[i].pos_y);
             if(Lasers[i].owner != 1)
                 glRotatef(180,0,1,0);
-            glTranslatef(Lasers[i].pos_x,0,Lasers[i].pos_y);
             Lasers[i].pos_y += (Lasers[i].direction * Lasers[i].speed * gEngine.dtime);
             gEngine.DrawModel(model, Lasers[i].texture);
             glPopMatrix();
