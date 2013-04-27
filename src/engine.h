@@ -117,6 +117,7 @@ struct Entity
 
     float start_x;
     float freq;
+    float amp;
 
     bool alive;
 
