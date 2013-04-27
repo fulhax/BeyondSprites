@@ -42,18 +42,21 @@ void EnemyHandler::Update()
                 Badguys[i].pos_x+Badguys[i].size > gEngine.Player.pos_x-0.3f &&
                 Badguys[i].pos_x-Badguys[i].size < gEngine.Player.pos_x+0.3f)
             {
-                pitch=rand()%30;
-                pitch=pitch/10+0.85f;
+                if(gEngine.Player.health <= 0)
+                    gEngine.Player.health = 0;
+                else
+                {
+                    pitch=rand()%30;
+                    pitch=pitch/10+0.85f;
 
-                alSourcef(gEngine.killsound, AL_PITCH, pitch);
-                alSourcePlay(gEngine.killsound);
+                    alSourcef(gEngine.killsound, AL_PITCH, pitch);
+                    alSourcePlay(gEngine.killsound);
 
-                gEngine.Player.health -= Badguys[i].health;
-                Badguys[i].alive = false;
+                    gEngine.Player.health -= Badguys[i].health;
+
+                    Badguys[i].alive = false;
+                }
             }
-
-            if(Badguys[i].pos_y > 8 || Badguys[i].pos_y < -8)
-                Badguys[i].alive = false;
 
             Badguys[i].pos_y += Badguys[i].speed * gEngine.dtime;
             Badguys[i].pos_x = Badguys[i].start_x + Badguys[i].amp*sin(2.0f*PI*Badguys[i].freq);
@@ -61,6 +64,9 @@ void EnemyHandler::Update()
 
             Badguys[i].Attack();
             Badguys[i].Draw();
+
+            if(Badguys[i].pos_y > 8 || Badguys[i].pos_y < -8)
+                Badguys[i].alive = false;
         }
         else
         {
@@ -81,12 +87,10 @@ void EnemyHandler::Update()
                     Badguys[i].texture = model[0].textures[level];
                     Badguys[i].attacktype = 1;
                     Badguys[i].worth = 10*(level+1);
-
-                    Badguys[i].level = rand()%MAX_LASER_FILES; // Laser power level
                 break;
                 case 1:
-                    Badguys[i].freq = 0;
-                    Badguys[i].amp = 2;
+                    Badguys[i].freq = rand()%10;
+                    Badguys[i].amp = 3;
 
                     Badguys[i].speed = 2*level;
                     Badguys[i].attacktime = 0.5f;
@@ -96,10 +100,12 @@ void EnemyHandler::Update()
                     Badguys[i].model = model[1].model;
                     Badguys[i].texture = model[1].textures[level];
 
+                    Badguys[i].attacktype = 0;
                     Badguys[i].worth = 5*(level+1);
                 break;
             }
-            Badguys[i].pos_y = -8;
+            Badguys[i].level = rand()%MAX_LASER_FILES; // Laser power level
+            Badguys[i].pos_y = -7;
             Badguys[i].start_x = (rand()%12) -6;
             Badguys[i].alive = true;
         }
@@ -123,13 +129,16 @@ void LaserHandler::Spawn(int owner, float x, float y, int level, int dir)
             Lasers[i].owner = owner;
             Lasers[i].direction = dir;
             Lasers[i].pos_x = x;
+            Lasers[i].start_x = x;
             Lasers[i].pos_y = y + (0.6f * dir);
             Lasers[i].alive = true;
             Lasers[i].texture = textures[level];
 
+            Lasers[i].freq = rand()%10;
+            Lasers[i].amp = 1;
             Lasers[i].damage = 3*(level+1);
             Lasers[i].speed = 3*(level+1);
-
+            Lasers[i].level = level;
             break;
         }
     } 
@@ -143,7 +152,7 @@ void LaserHandler::Draw()
     {
         if(Lasers[i].alive)
         {
-            if(Lasers[i].pos_y > 6 || Lasers[i].pos_y < -6)
+            if(Lasers[i].pos_y > 8 || Lasers[i].pos_y < -8)
                 Lasers[i].alive = false;
 
             if(Lasers[i].owner == 1)
@@ -208,26 +217,27 @@ void LaserHandler::Draw()
                     Lasers[i].pos_x > (gEngine.Player.pos_x-0.3f) &&
                     Lasers[i].pos_x < (gEngine.Player.pos_x+0.3f))
                 {
-                    pitch=rand()%30;
-                    pitch=pitch/10+0.85f;
-
-                    alSourcef(gEngine.hitsound, AL_PITCH, pitch);
-                    alSourcePlay(gEngine.hitsound);
-
-                    Lasers[i].alive = false;
-
-                    if(gEngine.shield > 0)
+                    if(gEngine.Player.health > 0)
                     {
-                        gEngine.shield -= (float)Lasers[i].damage*0.01f;
-                        if(gEngine.shield < 0)
-                            gEngine.shield = 0;
-                    }
-                    else
-                    {
-                        gEngine.Player.health -= Lasers[i].damage;
-                        if(gEngine.Player.health <= 0)
+                        pitch=rand()%30;
+                        pitch=pitch/10+0.85f;
+
+                        alSourcef(gEngine.hitsound, AL_PITCH, pitch);
+                        alSourcePlay(gEngine.hitsound);
+
+                        Lasers[i].alive = false;
+
+                        if(gEngine.shield > 0)
                         {
-                            // TODO: Kill player
+                            gEngine.shield -= (float)Lasers[i].damage*0.01f;
+                            if(gEngine.shield < 0)
+                                gEngine.shield = 0;
+                        }
+                        else
+                        {
+                            gEngine.Player.health -= Lasers[i].damage;
+                            if(gEngine.Player.health <= 0)
+                                gEngine.Player.health = 0;
                         }
                     }
                 }
@@ -238,7 +248,19 @@ void LaserHandler::Draw()
 
             if(Lasers[i].owner != 1)
                 glRotatef(180,0,1,0);
+
+            if(Lasers[i].level > 1 && Lasers[i].level < 4)
+            {
+                Lasers[i].pos_x = Lasers[i].start_x + Lasers[i].amp*sin(2.0f*PI*Lasers[i].freq);
+
+                if(i%2 == 0)
+                    Lasers[i].freq += 1 * gEngine.dtime;
+                else
+                    Lasers[i].freq -= 1 * gEngine.dtime;
+            }
+
             Lasers[i].pos_y += (Lasers[i].direction * Lasers[i].speed * gEngine.dtime);
+
             gEngine.DrawModel(model, Lasers[i].texture);
             glPopMatrix();
         }
@@ -262,19 +284,20 @@ void Entity::Attack()
 {
     if(nextattack >= attacktime)
     {
+        int dir = (type==0) ? 1 : -1;
         switch(attacktype)
         {
             case 2:
-                gEngine.PewPew.Spawn(type, pos_x-0.5f, pos_y, level, (type==0) ? 1 : -1); 
-                gEngine.PewPew.Spawn(type, pos_x+0.5f, pos_y, level, (type==0) ? 1 : -1); 
-                gEngine.PewPew.Spawn(type, pos_x, pos_y, level, (type==0) ? 1 : -1); 
+                gEngine.PewPew.Spawn(type, pos_x-0.5f, pos_y - (0.6f * dir), level, dir); 
+                gEngine.PewPew.Spawn(type, pos_x+0.5f, pos_y - (0.6f * dir), level, dir); 
+                gEngine.PewPew.Spawn(type, pos_x, pos_y, level, dir); 
             break; 
             case 1:
-                gEngine.PewPew.Spawn(type, pos_x-0.5f, pos_y, level, (type==0) ? 1 : -1); 
-                gEngine.PewPew.Spawn(type, pos_x+0.5f, pos_y, level, (type==0) ? 1 : -1); 
+                gEngine.PewPew.Spawn(type, pos_x-0.5f, pos_y, level, dir); 
+                gEngine.PewPew.Spawn(type, pos_x+0.5f, pos_y, level, dir); 
             break;
             default:
-                gEngine.PewPew.Spawn(type, pos_x, pos_y, level, (type==0) ? 1 : -1); 
+                gEngine.PewPew.Spawn(type, pos_x, pos_y, level, dir); 
             break;
         }
         nextattack = 0;
@@ -302,11 +325,14 @@ void Entity::Draw()
 
 void Engine::Reset()
 {
+    for(int i=0;i<MAX_POWERUP;i++)
+        Boost[i].alive = false;
     for(int i=0;i<MAX_LASER;i++)
         PewPew.Lasers[i].alive = false;
     for(int i=0;i<MAX_BADIES;i++)
         Enemies.Badguys[i].alive = false;
 
+    Player.attacktype = 0;
     Player.type = 1;
     Player.pos_y = 5;
     Player.pos_x = 0;
@@ -315,6 +341,8 @@ void Engine::Reset()
     Player.level = 0;
     shield = 1;
     score = 0;
+    badiecounter = 0;
+    Enemies.numberofbadies = 0;
 }
 
 int Engine::Init()
@@ -516,7 +544,6 @@ void Engine::DrawModel(aiScene* model, unsigned int texture)
 void Engine::MainLoop()
 {
     static float oldtime = glfwGetTime();
-    static float badiecounter = 1;
     float currtime = 0;
 
     while(Running)
@@ -532,6 +559,9 @@ void Engine::MainLoop()
         if(glfwGetKey(GLFW_KEY_ESC) == GLFW_PRESS)
             Running = false;
 
+        if(glfwGetKey('R') == GLFW_PRESS)
+            Reset();
+
         if(Player.health > 0)
         {
             if(glfwGetKey(GLFW_KEY_UP) == GLFW_PRESS)
@@ -546,9 +576,6 @@ void Engine::MainLoop()
 
             if(glfwGetKey(GLFW_KEY_SPACE) == GLFW_PRESS)
                 Player.Attack();
-
-            if(glfwGetKey('R') == GLFW_PRESS)
-                Reset();
         }
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -630,7 +657,7 @@ void Engine::DrawPowerup()
                         
                         if(Player.level == 4)
                             Player.attacktype = 1;
-                        if(Player.level == MAX_LASER_FILES)
+                        if(Player.level == MAX_LASER_FILES-1)
                             Player.attacktype = 2;
                         Player.attacktime -= (0.002f*Player.level);
                         break;
@@ -682,7 +709,30 @@ void Engine::DrawScore()
     if(Player.health <= 0)
     {
         glPrint(&defFont, 96, 240,"YOU ARE DEFEATED!");
-        glPrint(&defFont, 96, 285,"Press R to restart");
+        if(score < 50)
+            glPrint(&defFont, 32, 285,"u mad?");
+        if(score < 100)
+            glPrint(&defFont, 32, 285,"Did you even try to play the game?");
+        else if(score < 300)
+            glPrint(&defFont, 32, 285,"Not the best score i've seen");
+        else if(score < 500)
+            glPrint(&defFont, 32, 285,"Awww, better luck next time");
+        else if(score < 1000)
+            glPrint(&defFont, 32, 285,"Click here to download HD DLC");
+        else if(score < 5000)
+            glPrint(&defFont, 32, 285,"Not bad, not bad at all");
+        else if(score < 6000)
+            glPrint(&defFont, 32, 285,"M.m.m.monsterkill!");
+        else if(score < 7000)
+            glPrint(&defFont, 32, 285,"GODLIKE!");
+        else if(score < 8000)
+            glPrint(&defFont, 32, 285,"Congratulations! You won the Internet");
+        else if(score < 9000)
+            glPrint(&defFont, 32, 285,"Is that you Mr. Norris?");
+        else if(score >= 9000)
+            glPrint(&defFont, 32, 285,"IT'S OVER 9000!!!");
+
+        glPrint(&defFont, 96, 330,"Press R to restart");
     }
 }
 

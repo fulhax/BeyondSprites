@@ -41,7 +41,7 @@ static char LaserFiles[][40] = {
    "./artsyfartsystuff/pewpewred.tga"
 };
 
-static char raddieModels[][40] = {
+static char BaddieModels[][40] = {
     "./artsyfartsystuff/baddie1.obj",
     "./artsyfartstytuff/baddie2.obj"
 };
@@ -102,7 +102,11 @@ struct Laser
     float speed;
     float pos_x;
     float pos_y;
+    float start_x;
+    float freq;
+    float amp;
 
+    int level;
     int damage;
     int direction;
 
@@ -204,6 +208,7 @@ struct PowerUp
 
 struct Engine
 {
+        float badiecounter;
         Entity Player;
         bool Running;
 
