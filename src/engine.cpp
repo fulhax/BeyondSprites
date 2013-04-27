@@ -2,8 +2,29 @@
 
 Engine gEngine;
 
+Entity::Entity()
+{
+    pos_x = 0;
+    pos_y = 0;
+
+    speed = 100;
+    health = 100;
+
+    model = 0;
+    texture = 0;
+}
+
+void Entity::Draw()
+{
+    glPushMatrix();
+    glTranslatef(pos_x,pos_y,0);
+    gEngine.DrawModel(model,texture);
+    glPopMatrix();
+}
+
 int Engine::Init()
 {
+    Music = 0;
     Running = false;
 
     glfwInit();
@@ -23,13 +44,8 @@ int Engine::Init()
     glMatrixMode(GL_MODELVIEW);
     glEnable(GL_TEXTURE_2D);
 
-/*    test = LoadModel("./bin/player/player.md5mesh");
-    if(!test)
-        return 0;
-
-    ttest = LoadTexture("./bin/marine/body_d.tga");
-    if(!ttest)
-        return 0;*/
+    Player.model = LoadModel("./player/player.md5mesh");
+    Player.texture = LoadTexture("./marine/body_d.tga");
 
     if(!alutInit(0,0))
     {
@@ -37,19 +53,21 @@ int Engine::Init()
         return 0;
     }
 
-    atest = LoadSound("./bin/Jump.wav");
-
-
-    float pitch=0;
-
-    for(int i=0;i < 10;i++)
-    {
-        pitch=rand()%30;
-        pitch=pitch/10+0.85f;
-
-        alSourcef(atest, AL_PITCH, pitch);
-        alSourcePlay(atest);
-    }
+/*
+ *    unsigned int atest;
+ *    atest = LoadSound("./Jump.wav");
+ *
+ *    float pitch=0;
+ *
+ *    for(int i=0;i < 10;i++)
+ *    {
+ *        pitch=rand()%30;
+ *        pitch=pitch/10+0.85f;
+ *
+ *        alSourcef(atest, AL_PITCH, pitch);
+ *        alSourcePlay(atest);
+ *    }
+ */
 
     Running = true;   
     return 1;
@@ -59,9 +77,9 @@ unsigned int Engine::LoadSound(const char* filename)
 {
     unsigned int source;
     unsigned int buf = alutCreateBufferFromFile(filename);
-    if(!buf)
+    if(alGetError() != AL_NO_ERROR)
     {
-        fprintf(stderr, "Sound file failed to load %s\n",filename);
+        fprintf(stderr, "Sound file failed to load %s : (0x%x) : (0x%x) %s\n",filename, alGetError(), alutGetError(), alutGetErrorString(alutGetError()));
         return 0;
     }
 
@@ -87,6 +105,18 @@ unsigned int Engine::LoadTexture(const char* filename)
 
     fprintf(stderr,"Failed to load %s\n",filename);
     return 0;
+}
+
+void Engine::PlayMusic()
+{
+    ALenum state;
+    alGetSourcei(Music, AL_SOURCE_STATE, &state);
+    if(state != AL_PLAYING)
+    {
+        int curr = (rand()%MAX_MUSIC);
+        Music = LoadSound(MusicFiles[curr]);
+        alSourcePlay(Music);
+    }
 }
 
 aiScene* Engine::LoadModel(const char *filename)
@@ -145,21 +175,38 @@ void Engine::DrawModel(aiScene* model, unsigned int texture)
 
 void Engine::MainLoop()
 {
+    static float oldtime = 0;
+    float currtime = 0;
     while(Running)
     {
+        PlayMusic();
+        
+        currtime = glfwGetTime();
+        dtime = oldtime - currtime;
+        oldtime = currtime;
+
         if(glfwGetKey(GLFW_KEY_ESC) == GLFW_PRESS)
             Running = false;
+
+        if(glfwGetKey(GLFW_KEY_UP) == GLFW_PRESS)
+            Player.pos_y -= Player.speed * dtime;
+        else if(glfwGetKey(GLFW_KEY_DOWN) == GLFW_PRESS)
+            Player.pos_y += Player.speed * dtime;
+
+        if(glfwGetKey(GLFW_KEY_LEFT) == GLFW_PRESS)
+            Player.pos_x += Player.speed * dtime;
+        else if(glfwGetKey(GLFW_KEY_RIGHT) == GLFW_PRESS)
+            Player.pos_x -= Player.speed * dtime;
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glLoadIdentity();
 
-        glTranslatef(0,-50,-150);
-        glRotatef(-90,1,0,0);
-        glRotatef(-90,0,0,1);
+        glTranslatef(0,0,-300);
         // TODO: Everything
        
         glColor3f(1.0,1.0,1.0);
 
+        Player.Draw();
         //DrawModel(test,ttest);
 
         glfwSwapBuffers();
