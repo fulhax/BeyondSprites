@@ -50,13 +50,22 @@ void EnemyHandler::Update()
             switch(type)
             {
                 default:
-                    Badguys[i].speed = (rand()%5)+5;
-                    Badguys[i].attacktime = ((rand()%100) * 0.01f) + 0.2f;
-
-                    Badguys[i].health = 10;
+                case 0:
+                    Badguys[i].speed = 5;
+                    Badguys[i].attacktime = 1;
+                    Badguys[i].health = 30;
                     Badguys[i].size = model[0].size;
                     Badguys[i].model = model[0].model;
-                    Badguys[i].texture = model[0].textures[rand()%MAX_TEXTURES_1];
+                    Badguys[i].texture = model[0].textures[rand()%MAX_TEXTURES];
+                break;
+                case 1:
+                    Badguys[i].speed = 10;
+                    Badguys[i].attacktime = 0.3f;
+
+                    Badguys[i].health = 5;
+                    Badguys[i].size = model[1].size;
+                    Badguys[i].model = model[1].model;
+                    Badguys[i].texture = model[1].textures[rand()%MAX_TEXTURES];
                 break;
             }
             Badguys[i].freq = (rand()%10)-5;
@@ -137,11 +146,8 @@ void LaserHandler::Draw()
             }
 
             glPushMatrix();
-<<<<<<< HEAD
             glTranslatef(Lasers[i].pos_x,0,Lasers[i].pos_y);
-=======
 
->>>>>>> d9588d14b19ebd9ef5086c18b6f7b8f34f67dbfb
             if(Lasers[i].owner != 1)
                 glRotatef(180,0,1,0);
             Lasers[i].pos_y += (Lasers[i].direction * Lasers[i].speed * gEngine.dtime);
@@ -234,9 +240,13 @@ int Engine::Init()
     Player.alive = true;
 
     Enemies.model[0].model = LoadModel("./artsyfartsystuff/baddie1.obj");
+    Enemies.model[1].model = LoadModel("./artsyfartsystuff/baddie2.obj");
+    Enemies.model[1].size = 0.40f;
 
-    for(int i=0;i<MAX_TEXTURES_1;i++)
-        Enemies.model[0].textures[i] = LoadTexture(BaddieFirstTextures[i]);
+    for(int i=0;i<MAX_TEXTURES;i++)
+        Enemies.model[0].textures[i] = LoadTexture(BaddieTextures_1[i]);
+    for(int i=0;i<MAX_TEXTURES;i++)
+        Enemies.model[1].textures[i] = LoadTexture(BaddieTextures_2[i]);
 
     for(int i=0;i<MAX_LASER_FILES;i++)
         PewPew.textures[i] = LoadTexture(LaserFiles[i]);

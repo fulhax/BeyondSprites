@@ -22,10 +22,8 @@
 #define MAX_MUSIC 13
 #define MAX_LASER_FILES 8
 
-#define MAX_MODELS 1
+#define MAX_MODELS 2
 #define MAX_TEXTURES 4
-
-#define MAX_TEXTURES_1 4
 
 static char LaserFiles[][40] = {
    "./artsyfartsystuff/pewpewblue.tga",
@@ -43,7 +41,14 @@ static char BaddieModels[][40] = {
     "./artsyfartstytuff/baddie2.obj"
 };
 
-static char BaddieFirstTextures[][40] = {
+static char BaddieTextures_2[][40] = {
+    "./artsyfartsystuff/enemy2_1.tga",
+    "./artsyfartsystuff/enemy2_2.tga",
+    "./artsyfartsystuff/enemy2_3.tga",
+    "./artsyfartsystuff/enemy2_4.tga"
+};
+
+static char BaddieTextures_1[][40] = {
     "./artsyfartsystuff/baddie1.tga",
     "./artsyfartsystuff/baddie2.TGA",
     "./artsyfartsystuff/baddie3.TGA",
@@ -101,7 +106,7 @@ struct ModelHandler
 
     ModelHandler() {
         model = 0;
-        size = 0.5f;
+        size = 0.70f;
     };
 };
 
