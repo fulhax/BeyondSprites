@@ -13,7 +13,21 @@
 #include <AL/alc.h>
 #include <AL/alut.h>
 
+#define MAX_LASER 256
 #define MAX_MUSIC 13
+#define MAX_LASER_FILES 8
+
+static char LaserFiles[][40] = {
+   "./artsyfartsystuff/pewpewblue.tga",
+   "./artsyfartsystuff/pewpewdarkness.tga",
+   "./artsyfartsystuff/pewpewdarkorange.tga",
+   "./artsyfartsystuff/pewpewgreen.tga",
+   "./artsyfartsystuff/pewpewlightblue.tga",
+   "./artsyfartsystuff/pewpeworange.tga",
+   "./artsyfartsystuff/pewpewpink.tga",
+   "./artsyfartsystuff/pewpewred.tga"
+};
+
 static char MusicFiles[][40] = {
     "./music/01_tunnel of bodies.wav",
     "./music/02_castles of a viking.wav",
@@ -31,28 +45,64 @@ static char MusicFiles[][40] = {
     "./music/14_the city's ghost.wav"
 };
 
-struct Entity
+struct Laser
 {
+    bool alive;
     float speed;
     float pos_x;
     float pos_y;
 
-    int health;
-    aiScene* model;
+    int damage;
+    int direction;
+
     unsigned int texture;
 
+    Laser();
+};
+
+struct LaserHandler
+{
+    aiScene* model;
+    unsigned int textures[MAX_LASER_FILES];
+    Laser Lasers[MAX_LASER];
+
+    void Spawn(float x, float y, int type, int dir);
     void Draw();
+};
+
+struct Entity
+{
+    int type;
+
+    float speed;
+    float pos_x;
+    float pos_y;
+
+    float nextattack;
+    float attacktime;
+
+    int health;
+    aiScene* model;
+
+    unsigned int texture;
+    unsigned int lasersound;
+
+    void Draw();
+    void Attack();
+
     Entity();
 };
 
 class Engine
 {
-        float dtime;
         Entity Player;
         bool Running;
 
         unsigned int Music;
     public:
+        LaserHandler PewPew;
+
+        float dtime;
         unsigned int LoadSound(const char* filename);
         unsigned int LoadTexture(const char* filename);
         void DrawModel(aiScene* model, unsigned int texture);

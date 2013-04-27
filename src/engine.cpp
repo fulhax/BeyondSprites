@@ -4,26 +4,107 @@ Engine gEngine;
 
 Entity::Entity()
 {
+    type = 0;
     pos_x = 0;
     pos_y = 0;
-
-    speed = 100;
+    speed = 10;
     health = 100;
-
     model = 0;
     texture = 0;
+    attacktime = 0.2f;
+    nextattack = attacktime;
+}
+
+Laser::Laser()
+{
+    pos_x = 0;
+    pos_y = 0;
+    speed = 20;
+    damage = 10;
+    direction = 0;
+    alive = false;
+}
+
+void LaserHandler::Spawn(float x, float y, int type, int dir)
+{
+    for(int i=0;i<MAX_LASER;i++) 
+    {
+        if(!Lasers[i].alive)
+        {
+            Lasers[i].direction = dir;
+            Lasers[i].pos_x = x;
+            Lasers[i].pos_y = y + (0.4f * dir);
+            Lasers[i].alive = true;
+            Lasers[i].texture = textures[type];
+            break;
+        }
+    } 
+}
+
+void LaserHandler::Draw()
+{
+    for(int i=0;i<MAX_LASER;i++)
+    {
+        if(Lasers[i].alive)
+        {
+            if(Lasers[i].pos_y > 6 || Lasers[i].pos_y < -6)
+                Lasers[i].alive = false;
+
+            glPushMatrix();
+            glTranslatef(Lasers[i].pos_x,0,Lasers[i].pos_y);
+            Lasers[i].pos_y += (Lasers[i].direction * Lasers[i].speed * gEngine.dtime);
+            gEngine.DrawModel(model, Lasers[i].texture);
+            glPopMatrix();
+        }
+    }
+}
+
+void GLFWCALL handleResize(int width, int height)
+{
+    glViewport(0,0,width,height);
+
+    glMatrixMode(GL_PROJECTION);
+
+    glLoadIdentity();
+
+    float aspect = ((float)width)/height;
+    gluPerspective(45.0, aspect, 1.0, 1000.0);
+    glMatrixMode(GL_MODELVIEW);
+}
+
+void Entity::Attack()
+{
+    static float pitch=0;
+
+    if(nextattack >= attacktime)
+    {
+        pitch=rand()%30;
+        pitch=pitch/10+0.85f;
+
+        alSourcef(lasersound, AL_PITCH, pitch);
+        alSourcePlay(lasersound);
+
+        gEngine.PewPew.Spawn(pos_x, pos_y, rand()%MAX_LASER_FILES, (type==0) ? 1 : -1); 
+        nextattack = 0;
+    }
+
+    printf("wtf, %f, %f\n",nextattack,attacktime);
 }
 
 void Entity::Draw()
 {
     glPushMatrix();
-    glTranslatef(pos_x,pos_y,0);
+    glTranslatef(pos_x,0,pos_y);
     gEngine.DrawModel(model,texture);
     glPopMatrix();
+
+    if(nextattack < attacktime)
+        nextattack += gEngine.dtime;
 }
 
 int Engine::Init()
 {
+    srand(time(0));
     Music = 0;
     Running = false;
 
@@ -35,6 +116,8 @@ int Engine::Init()
         return 0;
     }
 
+    glViewport(0,0,640,480);
+
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     float aspect = ((float)640)/480;
@@ -44,14 +127,25 @@ int Engine::Init()
     glMatrixMode(GL_MODELVIEW);
     glEnable(GL_TEXTURE_2D);
 
-    Player.model = LoadModel("./player/player.md5mesh");
-    Player.texture = LoadTexture("./marine/body_d.tga");
+    glEnable(GL_CULL_FACE);
 
     if(!alutInit(0,0))
     {
         fprintf(stderr,"ohnos openal pooped\n");
         return 0;
     }
+
+    glfwSetWindowSizeCallback(handleResize);
+
+    Player.lasersound = LoadSound("./sound/laser.wav");
+    Player.model = LoadModel("./artsyfartsystuff/playership.obj");
+    Player.texture = LoadTexture("./artsyfartsystuff/playership.tga");
+    Player.type = 1;
+    Player.pos_y = 5;
+
+    for(int i=0;i<MAX_LASER_FILES;i++)
+        PewPew.textures[i] = LoadTexture(LaserFiles[i]);
+    PewPew.model = LoadModel("./artsyfartsystuff/pewpewlasers.obj");
 
 /*
  *    unsigned int atest;
@@ -175,39 +269,41 @@ void Engine::DrawModel(aiScene* model, unsigned int texture)
 
 void Engine::MainLoop()
 {
-    static float oldtime = 0;
+    static float oldtime = glfwGetTime();
     float currtime = 0;
     while(Running)
     {
         PlayMusic();
         
         currtime = glfwGetTime();
-        dtime = oldtime - currtime;
+        dtime = currtime - oldtime;
         oldtime = currtime;
 
         if(glfwGetKey(GLFW_KEY_ESC) == GLFW_PRESS)
             Running = false;
 
         if(glfwGetKey(GLFW_KEY_UP) == GLFW_PRESS)
-            Player.pos_y -= Player.speed * dtime;
+            Player.pos_y = (Player.pos_y > -6) ? Player.pos_y - Player.speed * dtime : Player.pos_y;
         else if(glfwGetKey(GLFW_KEY_DOWN) == GLFW_PRESS)
-            Player.pos_y += Player.speed * dtime;
+            Player.pos_y = (Player.pos_y < 6) ? Player.pos_y + Player.speed * dtime : Player.pos_y;
 
         if(glfwGetKey(GLFW_KEY_LEFT) == GLFW_PRESS)
-            Player.pos_x += Player.speed * dtime;
+            Player.pos_x = (Player.pos_x > -8) ? Player.pos_x - Player.speed * dtime : Player.pos_x;
         else if(glfwGetKey(GLFW_KEY_RIGHT) == GLFW_PRESS)
-            Player.pos_x -= Player.speed * dtime;
+            Player.pos_x = (Player.pos_x < 8) ? Player.pos_x + Player.speed * dtime : Player.pos_x;
+
+        if(glfwGetKey(GLFW_KEY_SPACE) == GLFW_PRESS)
+            Player.Attack();
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glLoadIdentity();
 
-        glTranslatef(0,0,-300);
-        // TODO: Everything
-       
+        glTranslatef(0,0,-15);
+        glRotatef(90,1,0,0);
         glColor3f(1.0,1.0,1.0);
 
+        PewPew.Draw();
         Player.Draw();
-        //DrawModel(test,ttest);
 
         glfwSwapBuffers();
     }
