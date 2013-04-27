@@ -300,6 +300,23 @@ void Entity::Draw()
     glEnable(GL_TEXTURE_2D);
 }
 
+void Engine::Reset()
+{
+    for(int i=0;i<MAX_LASER;i++)
+        PewPew.Lasers[i].alive = false;
+    for(int i=0;i<MAX_BADIES;i++)
+        Enemies.Badguys[i].alive = false;
+
+    Player.type = 1;
+    Player.pos_y = 5;
+    Player.pos_x = 0;
+    Player.alive = true;
+    Player.health = 100;
+    Player.level = 0;
+    shield = 1;
+    score = 0;
+}
+
 int Engine::Init()
 {
     gEngine.Enemies.numberofbadies = 0;
@@ -496,10 +513,6 @@ void Engine::DrawModel(aiScene* model, unsigned int texture)
     }
 }
 
-void Engine::Reset()
-{
-}
-
 void Engine::MainLoop()
 {
     static float oldtime = glfwGetTime();
@@ -534,7 +547,7 @@ void Engine::MainLoop()
             if(glfwGetKey(GLFW_KEY_SPACE) == GLFW_PRESS)
                 Player.Attack();
 
-            if(glfwGetKey('r') == GLFW_PRESS)
+            if(glfwGetKey('R') == GLFW_PRESS)
                 Reset();
         }
 
@@ -565,12 +578,21 @@ void Engine::MainLoop()
 
 void Engine::DrawShield()
 {
+    if(shield_anim < 0)
+    {
+        int oldshield = currshield;
+        while(oldshield == currshield)
+            currshield = rand()%MAX_TEXTURES;
+        shield_anim = 0.125;
+    }
+    shield_anim -= dtime;
+
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glColor4f(1,shield,shield,shield);
     glPushMatrix();
     glTranslatef(Player.pos_x,0,Player.pos_y);
-    DrawModel(Shield, shieldtextures[0]);
+    DrawModel(Shield, shieldtextures[currshield]);
     glPopMatrix();
     glDisable(GL_BLEND);
     glColor4f(1,1,1,1);
@@ -659,7 +681,7 @@ void Engine::DrawScore()
 
     if(Player.health <= 0)
     {
-        glPrint(&defFont, 96, 240,"YOU AR DEFEATED!");
+        glPrint(&defFont, 96, 240,"YOU ARE DEFEATED!");
         glPrint(&defFont, 96, 285,"Press R to restart");
     }
 }

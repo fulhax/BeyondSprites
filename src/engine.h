@@ -41,7 +41,7 @@ static char LaserFiles[][40] = {
    "./artsyfartsystuff/pewpewred.tga"
 };
 
-static char BaddieModels[][40] = {
+static char raddieModels[][40] = {
     "./artsyfartsystuff/baddie1.obj",
     "./artsyfartstytuff/baddie2.obj"
 };
@@ -210,7 +210,7 @@ struct Engine
         unsigned int Music;
         Font defFont;
         float shield_anim;
-
+        int currshield;
         float shield;
         int score;
 
