@@ -137,7 +137,11 @@ void LaserHandler::Draw()
             }
 
             glPushMatrix();
+<<<<<<< HEAD
             glTranslatef(Lasers[i].pos_x,0,Lasers[i].pos_y);
+=======
+
+>>>>>>> d9588d14b19ebd9ef5086c18b6f7b8f34f67dbfb
             if(Lasers[i].owner != 1)
                 glRotatef(180,0,1,0);
             Lasers[i].pos_y += (Lasers[i].direction * Lasers[i].speed * gEngine.dtime);
@@ -376,7 +380,7 @@ void Engine::MainLoop()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glLoadIdentity();
-
+        
         glTranslatef(0,0,-15);
         glRotatef(90,1,0,0);
         glColor3f(1.0,1.0,1.0);
