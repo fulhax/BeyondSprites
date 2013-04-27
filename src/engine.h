@@ -18,7 +18,7 @@
 
 #define PI 3.14f
 
-#define MAX_BADIES 75
+#define MAX_BADIES 150
 #define MAX_LASER 256
 
 #define MAX_MUSIC 13

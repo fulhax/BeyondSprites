@@ -655,11 +655,20 @@ void Engine::DrawPowerup()
                         alSourcePlay(powerupsound);
                         Player.level += (Player.level<MAX_LASER_FILES-1)?1:0;
                         
-                        if(Player.level == 4)
-                            Player.attacktype = 1;
-                        if(Player.level == MAX_LASER_FILES-1)
-                            Player.attacktype = 2;
-                        Player.attacktime -= (0.002f*Player.level);
+                        if(Player.level < (MAX_LASER_FILES-1))
+                        {
+                            if(Player.level == 4)
+                                Player.attacktype = 1;
+                            if(Player.level == MAX_LASER_FILES-1)
+                                Player.attacktype = 2;
+                            Player.attacktime -= (0.002f*Player.level);
+                        }
+                        else
+                        {
+                            Player.health += 10;
+                            if(Player.health > 100)
+                                Player.health = 100;
+                        }
                         break;
                     case 1:
                         alSourcePlay(shieldupsound);
