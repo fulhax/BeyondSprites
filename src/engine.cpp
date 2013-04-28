@@ -671,7 +671,9 @@ void Engine::MainLoop()
 {
     static float oldtime = glfwGetTime();
     float currtime = 0;
-
+    bool joystickconnected=glfwGetJoystickParam(GLFW_JOYSTICK_1,GLFW_PRESENT);
+    int joystickbuttons=glfwGetJoystickParam(GLFW_JOYSTICK_1,GLFW_BUTTONS);
+    
     while(Running)
     {
         PlayMusic();
@@ -702,6 +704,34 @@ void Engine::MainLoop()
 
             if(glfwGetKey(GLFW_KEY_SPACE) == GLFW_PRESS)
                 Player.Attack();
+            
+            { // gamepad support
+            
+                float axis[2];
+                glfwGetJoystickPos(GLFW_JOYSTICK_1,axis,2);
+
+                if(axis[1]>0.3)
+                    Player.pos_y = (Player.pos_y > -6) ? Player.pos_y - axis[1] * Player.speed * dtime : Player.pos_y;
+                if(axis[1]<-0.3)
+                    Player.pos_y = (Player.pos_y < 6) ? Player.pos_y - axis[1] * Player.speed * dtime : Player.pos_y;
+                if(axis[0]<-0.3)
+                    Player.pos_x = (Player.pos_x > -8) ? Player.pos_x + axis[0] * Player.speed * dtime : Player.pos_x;
+                if(axis[0]>0.3)
+                    Player.pos_x = (Player.pos_x < 8) ? Player.pos_x + axis[0] * Player.speed * dtime : Player.pos_x;
+
+                unsigned char buttons[50];
+                glfwGetJoystickButtons(GLFW_JOYSTICK_1,buttons,joystickbuttons);
+                for(int i=0;i<joystickbuttons;i++)
+                {
+                    if(buttons[i]==GLFW_PRESS)
+                    {
+                        Player.Attack();
+                        break;
+                    }
+                }
+          //  if(glfwGetJoystickButtons() == GLFW_PRESS)
+           //     Player.Attack();
+            }
         }
 
         if(screenflicker > 0)
