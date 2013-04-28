@@ -894,7 +894,10 @@ int Engine::SpawnParticles(int type, float lifetime, float plifetime, float rate
             bool trynext = false;
             for(int j=0;j<MAX_PARTICLES;j++)
                 if(psystems[i].particles[j].life != 0)
+                {
                     trynext = true;
+                    break;
+                }
 
             if(trynext)
                 continue;
