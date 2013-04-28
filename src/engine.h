@@ -326,6 +326,7 @@ struct Engine
 
     unsigned int bigbadaboomsound;
     unsigned int fontimage;
+    unsigned int titleimage;
 
     LaserHandler PewPew;
     EnemyHandler Enemies;
