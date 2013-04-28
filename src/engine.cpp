@@ -873,6 +873,8 @@ void Engine::MainLoop()
             static bool keyup = false;
             static bool keydown = false;
             static bool keystep = false;
+			static bool joystep = false;
+			
             static bool restart = false;
             static float joytimer = 0;
 
@@ -896,14 +898,23 @@ void Engine::MainLoop()
                         name[scoreinput] = (name[scoreinput]==90)?48:name[scoreinput]+1;
                     if(axis[1]<-0.3)
                         name[scoreinput] = (name[scoreinput]==48)?90:name[scoreinput]-1;
-
-                    for(int i=0;i<joystickbuttons;i++)
-                    {
-                        scoreinput++;
-                        scoreinput=scoreinput%3;                       
-                    }
-                    joytimer = 0.4f;
+                    joytimer = 0.2f;
                 }
+				static bool buttonsheld[50];
+				for(int i=0;i<joystickbuttons;i++)
+				{
+					if(buttons[i]==GLFW_RELEASE)
+					{
+						if(buttonsheld[i])
+						{
+							scoreinput++;
+							scoreinput=scoreinput%3;
+							buttonsheld[i] = false;
+						}
+					}
+					if(buttons[i]==GLFW_PRESS)
+						buttonsheld[i] = true;
+				}
                 joytimer -= dtime;
             }
 
