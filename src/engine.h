@@ -24,7 +24,7 @@
 #define MAX_MUSIC 13
 #define MAX_LASER_FILES 8
 
-#define MAX_MODELS 3
+#define MAX_MODELS 9
 #define MAX_TEXTURES 4
 
 #define MAX_STARS 200
@@ -44,7 +44,20 @@ static char LaserFiles[][40] = {
 static char BaddieModels[][40] = {
     "./artsyfartsystuff/baddie1.obj",
     "./artsyfartsystuff/baddie2.obj",
-    "./artsyfartsystuff/baddie3.obj"
+    "./artsyfartsystuff/baddie3.obj",
+    "./artsyfartsystuff/rock3_1.obj", // Liten
+    "./artsyfartsystuff/rock3_2.obj",
+    "./artsyfartsystuff/rock2_1.obj", // Mellan
+    "./artsyfartsystuff/rock2_2.obj",
+    "./artsyfartsystuff/rock1_1.obj", // Stor
+    "./artsyfartsystuff/rock1_2.obj"
+};
+
+static char RockTextures[][40] = {
+    "./artsyfartsystuff/bigrock1.tga",
+    "./artsyfartsystuff/bigrock2.tga",
+    "./artsyfartsystuff/bigrock3.tga",
+    "./artsyfartsystuff/bigrock4.tga" // ICE
 };
 
 static char BaddieTextures_2[][40] = {
@@ -251,6 +264,7 @@ struct Engine
 
         aiScene* Bomb;
         unsigned int bombtextures[MAX_TEXTURES];
+        unsigned int rocktextures[MAX_TEXTURES];
 
         Stars Twinky[MAX_STARS];
         PowerUp Boost[MAX_POWERUP];
@@ -261,6 +275,7 @@ struct Engine
         unsigned int powerupsound;
         unsigned int shieldupsound;
 
+        unsgined int bigbadaboomsound;
         unsigned int fontimage;
 
         LaserHandler PewPew;

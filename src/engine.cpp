@@ -67,7 +67,8 @@ void EnemyHandler::Update()
 
             Badguys[i].freq += 1 * gEngine.dtime;
 
-            Badguys[i].Attack();
+            if(Badguys[i].attacktype >= 0)
+                Badguys[i].Attack();
             Badguys[i].Draw();
 
             if(Badguys[i].pos_y > 8 || Badguys[i].pos_y < -8)
@@ -87,9 +88,9 @@ void EnemyHandler::Update()
                     Badguys[i].speed = 2;
                     Badguys[i].attacktime = 1;
                     Badguys[i].health = 20*(level+1);
-                    Badguys[i].size = model[0].size;
-                    Badguys[i].model = model[0].model;
-                    Badguys[i].texture = model[0].textures[level];
+                    Badguys[i].size = model[type].size;
+                    Badguys[i].model = model[type].model;
+                    Badguys[i].texture = model[type].textures[level];
                     Badguys[i].attacktype = 1;
                     Badguys[i].worth = 10*(level+1);
                 break;
@@ -101,9 +102,9 @@ void EnemyHandler::Update()
                     Badguys[i].attacktime = 0.5f;
 
                     Badguys[i].health = 1*(level+1);
-                    Badguys[i].size = model[1].size;
-                    Badguys[i].model = model[1].model;
-                    Badguys[i].texture = model[1].textures[level];
+                    Badguys[i].size = model[type].size;
+                    Badguys[i].model = model[type].model;
+                    Badguys[i].texture = model[type].textures[level];
 
                     Badguys[i].attacktype = 0;
                     Badguys[i].worth = 5*(level+1);
@@ -117,13 +118,31 @@ void EnemyHandler::Update()
                     Badguys[i].attacktime = 0.6f;
 
                     Badguys[i].health = 5*(level+1);
-                    Badguys[i].size = model[2].size;
-                    Badguys[i].model = model[2].model;
-                    Badguys[i].texture = model[2].textures[level];
+                    Badguys[i].size = model[type].size;
+                    Badguys[i].model = model[type].model;
+                    Badguys[i].texture = model[type].textures[level];
 
                     Badguys[i].attacktype = 0;
                     Badguys[i].worth = 7*(level+1);
                     Badguys[i].rotamp = 0.1f;
+                break;
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                case 8:
+                    Badguys[i].attacktype = -1;
+                    Badguys[i].amp = 0;
+                    Badguys[i].rotamp = 0.1f;
+                    Badguys[i].attacktime = 0;
+                    Badguys[i].size = model[type].size;
+                    Badguys[i].model = model[type].model;
+                    Badguys[i].texture = gEngine.rocktextures[level];
+
+                    Badguys[i].health = 5*(type+1);
+                    if(level == 4)
+                        Badguys[i].health = Badguys[i].health / 2;
                 break;
             }
             Badguys[i].level = rand()%MAX_LASER_FILES; // Laser power level
@@ -207,8 +226,8 @@ void LaserHandler::Draw()
                             gEngine.Enemies.Badguys[e].alive = false;
                             gEngine.score += gEngine.Enemies.Badguys[e].worth;
 
-/*                            int loot = rand()%10000;
-                            if(loot > 7000)*/
+                            int loot = rand()%10000;
+                            if(loot > 7000)
                             {
                                 for(int l=0;l<MAX_POWERUP;l++)
                                 {
@@ -427,6 +446,8 @@ int Engine::Init()
     powerupsound = LoadSound("./sound/powerup.wav");
     shieldupsound = LoadSound("./sound/shieldup.wav");
 
+    bigbadaboomsound = LoadSound("./sound/bigbadaboom.wav");
+
     fontimage = LoadTexture("./artsyfartsystuff/font.tga");
     defFont.Load(fontimage,512,512);
 
@@ -443,6 +464,15 @@ int Engine::Init()
     Enemies.model[1].size = 0.30f;
     Enemies.model[2].size = 0.40f;
 
+    Enemies.model[3].size = 0.38f;
+    Enemies.model[4].size = 0.38f;
+
+    Enemies.model[5].size = 0.9f;
+    Enemies.model[6].size = 0.9f;
+
+    Enemies.model[7].size = 1.6f;
+    Enemies.model[8].size = 1.6f;
+
     for(int i=0;i<2;i++)
         poweruptextures[i] = LoadTexture(PowerupTextures[i]);
 
@@ -454,6 +484,7 @@ int Engine::Init()
         Enemies.model[1].textures[i] = LoadTexture(BaddieTextures_2[i]);
         Enemies.model[2].textures[i] = LoadTexture(BaddieTextures_3[i]);
         bombtextures[i] = LoadTexture(BombTextures[i]);
+        rocktextures[i] = LoadTexture(RockTextures[i]);
     }
 
     for(int i=0;i<MAX_STARS;i++)
@@ -751,10 +782,13 @@ void Engine::DrawPowerup()
                             shield = 1.0f;
                         break;
                     case 2:
+                        alSourcePlay(bigbadaboomsound);
+                        screenflicker = 0.3f;
+                        shield = 0.0f;
                         break;
-                        // Badabad!
                     case 3:
-                        screenflicker = 0.4f;
+                        alSourcePlay(bigbadaboomsound);
+                        screenflicker = 0.3f;
                         for(int i=0;i<MAX_BADIES;i++)
                             if(Enemies.Badguys[i].alive)
                             {
