@@ -865,7 +865,7 @@ void Engine::MainLoop()
             if(restart)
             {
                 Score s[11];
-                FILE *h=fopen("./high.score", r);
+                FILE *h=fopen("./high.score", "r");
                 if(h)
                 {
                     for(int i=0;i<10;i++)
