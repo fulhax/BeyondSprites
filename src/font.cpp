@@ -58,8 +58,8 @@ void glPrint(Font *font, int x,int y, const char* text, ...)
     glDisable(GL_CULL_FACE);
 
     glMatrixMode(GL_PROJECTION);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_ALPHA_TEST);
+    glAlphaFunc(GL_GEQUAL,0.5);
     glPushMatrix();
         glLoadIdentity();
         glOrtho(0,640,480,0,-1,1);
@@ -73,8 +73,6 @@ void glPrint(Font *font, int x,int y, const char* text, ...)
         glPopMatrix();
         glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
-
-    glDisable(GL_BLEND);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);

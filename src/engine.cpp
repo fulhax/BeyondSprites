@@ -740,11 +740,20 @@ void Engine::MainLoop()
                         break;
                     }
                 }
-          //  if(glfwGetJoystickButtons() == GLFW_PRESS)
-           //     Player.Attack();
+                //  if(glfwGetJoystickButtons() == GLFW_PRESS)
+                //     Player.Attack();
             }
         }
+        else
+        {
+            unsigned char buttons[50];
+            glfwGetJoystickButtons(GLFW_JOYSTICK_1,buttons,joystickbuttons);
 
+            if(buttons[7]==GLFW_PRESS)
+            {
+                Reset();
+            }
+        }
         if(screenflicker > 0)
         {
             glClearColor(1,1,1,1);
