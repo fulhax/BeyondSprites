@@ -1084,7 +1084,7 @@ void Engine::DrawScore()
         glPrint(&defFont, 96, 240,"YOU ARE DEFEATED!");
         if(score < 50)
             glPrint(&defFont, 32, 285,"u mad?");
-        if(score < 100)
+        else if(score < 100)
             glPrint(&defFont, 32, 285,"Did you even try to play the game?");
         else if(score < 300)
             glPrint(&defFont, 32, 285,"Not the best score i've seen");
