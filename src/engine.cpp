@@ -499,6 +499,7 @@ void Engine::Reset()
 
 int Engine::Init()
 {
+    InMenu = true;
     Enemies.numberofbadies = 0;
     int t = time(0);
     srand(t);
@@ -507,7 +508,7 @@ int Engine::Init()
 
     glfwInit();
 
-    if(glfwOpenWindow(1920,1200,8,8,8,0,24,8,GLFW_WINDOW) != true)
+    if(glfwOpenWindow(640,480,8,8,8,0,24,8,GLFW_WINDOW) != true)
     {
         fprintf(stderr,"ohnos glfw pooped\n");
         return 0;
@@ -723,6 +724,10 @@ void Engine::MainLoop()
     
     while(Running)
     {
+        currtime = glfwGetTime();
+        dtime = currtime - oldtime;
+        oldtime = currtime;
+
         PlayMusic();
         
         if(glfwGetKey(GLFW_KEY_ESC) == GLFW_PRESS)
@@ -730,13 +735,17 @@ void Engine::MainLoop()
 
         if(InMenu)
         {
-            //glPrint(&defFont, "[GameName]", 50, 0);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            glPrint(&defFont, 80, 10, "[GameName]");
+            glPrint(&defFont, 64,400, "Press any key to start");
+
+            DrawStars();
+            
+            glfwSwapBuffers();
             continue;
         }
 
-        currtime = glfwGetTime();
-        dtime = currtime - oldtime;
-        oldtime = currtime;
         if((int)badiecounter < MAX_BADIES)
             badiecounter += 0.2f * dtime;
 
