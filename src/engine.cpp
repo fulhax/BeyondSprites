@@ -519,6 +519,7 @@ int Engine::Init()
         fprintf(stderr,"ohnos glfw pooped\n");
         return 0;
     }
+    glfwSetWindowTitle("Beyond Sprites");
 
     glfwSwapInterval(0);
     glViewport(0,0,640,480);
@@ -800,13 +801,22 @@ void Engine::MainLoop()
 
             glPrint(&defFont, 32,430, "Press [Enter] to start");
 
+            glPrint(&defFont, 340,130,"-=]  Credits  [=-");
+            glPrint(&defFont, 340,160,"Christian Persson");
+            glPrint(&defFont, 340,180,"Fredrik Hansson");
+            glPrint(&defFont, 340,220,"-----------------");
+            glPrint(&defFont, 340,240,"Ludum Dare Jam 26");
             DrawStars();
- 
-            unsigned char buttons[50];
-            glfwGetJoystickButtons(GLFW_JOYSTICK_1,buttons,joystickbuttons);
 
-            if(buttons[7]==GLFW_PRESS)
-                InMenu = false;
+            if(joystickconnected)
+            {
+                unsigned char buttons[50];
+                glfwGetJoystickButtons(GLFW_JOYSTICK_1,buttons,joystickbuttons);
+
+                if(buttons[7]==GLFW_PRESS)
+                    InMenu = false;
+            }
+
             if(glfwGetKey(GLFW_KEY_ENTER) == GLFW_PRESS)
                 InMenu = false;
 
@@ -856,8 +866,6 @@ void Engine::MainLoop()
                         break;
                     }
                 }
-                //  if(glfwGetJoystickButtons() == GLFW_PRESS)
-                //     Player.Attack();
             }
         }
         else
@@ -866,14 +874,45 @@ void Engine::MainLoop()
             static bool keydown = false;
             static bool keystep = false;
             static bool restart = false;
-
-            unsigned char buttons[50];
-            glfwGetJoystickButtons(GLFW_JOYSTICK_1,buttons,joystickbuttons);
+            static float joytimer = 0;
 
             if(glfwGetKey(GLFW_KEY_ENTER) == GLFW_PRESS)
                 restart = true;
-            if(buttons[7]==GLFW_PRESS)
-                restart = true;
+
+            if(joystickconnected)
+            { // gamepad support
+                unsigned char buttons[50];
+                glfwGetJoystickButtons(GLFW_JOYSTICK_1,buttons,joystickbuttons);           
+
+                if(buttons[7]==GLFW_PRESS)
+                    restart = true;
+
+                float axis[2];
+                glfwGetJoystickPos(GLFW_JOYSTICK_1,axis,2);
+
+                if(joytimer < 0)
+                {
+                    if(axis[1]>0.3)
+                        name[scoreinput] = (name[scoreinput]==90)?48:name[scoreinput]+1;
+                    if(axis[1]<-0.3)
+                        name[scoreinput] = (name[scoreinput]==48)?90:name[scoreinput]-1;
+
+                    for(int i=0;i<joystickbuttons;i++)
+                    {
+                        scoreinput++;
+                        scoreinput=scoreinput%3;                       
+                    }
+                    joytimer = 0.4f;
+                }
+                joytimer -= dtime;
+            }
+
+            if(glfwGetKey(GLFW_KEY_UP) == GLFW_PRESS)
+                keyup = true;
+            if(glfwGetKey(GLFW_KEY_DOWN) == GLFW_PRESS)
+                keydown = true;
+            if(glfwGetKey(GLFW_KEY_SPACE) == GLFW_PRESS)
+                keystep = true;
 
             if(restart)
             {
@@ -913,13 +952,6 @@ void Engine::MainLoop()
                 Reset();
                 restart = false;
             }
-
-            if(glfwGetKey(GLFW_KEY_UP) == GLFW_PRESS)
-                keyup = true;
-            if(glfwGetKey(GLFW_KEY_DOWN) == GLFW_PRESS)
-                keydown = true;
-            if(glfwGetKey(GLFW_KEY_SPACE) == GLFW_PRESS)
-                keystep = true;
 
             if(glfwGetKey(GLFW_KEY_UP) == GLFW_RELEASE)
             {
