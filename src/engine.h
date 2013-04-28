@@ -198,6 +198,7 @@ struct Entity
     float pos_x;
     float pos_y;
 
+    int rottype;
     float rot;
     float rotamp;
 

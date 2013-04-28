@@ -19,6 +19,7 @@ Entity::Entity()
 
     rotamp = 0;
     rot = 0;
+    rottype = 0;
 
     alive = false;
 }
@@ -40,6 +41,28 @@ void EnemyHandler::Update()
     {
         if(Badguys[i].alive)
         {
+            for(int x=0;x<numberofbadies;x++)
+                if(i!=x)
+                {
+                    if(Badguys[x].pos_y+Badguys[x].size > Badguys[i].pos_y-Badguys[i].size &&
+                        Badguys[x].pos_y-Badguys[x].size < Badguys[i].pos_y+Badguys[i].size &&
+                        Badguys[x].pos_x+Badguys[x].size > Badguys[i].pos_x-Badguys[i].size &&
+                        Badguys[x].pos_x-Badguys[x].size < Badguys[i].pos_x+Badguys[i].size)
+                    {
+                        pitch=rand()%30;
+                        pitch=pitch/10+0.85f;
+
+                        alSourcef(gEngine.killsound, AL_PITCH, pitch);
+                        alSourcePlay(gEngine.killsound);
+
+                        if(Badguys[i].health < Badguys[x].health)
+                            Badguys[i].alive = false;
+                        else
+                            Badguys[x].alive = false;
+                        break;
+                    } 
+                }
+
             if(Badguys[i].pos_y+Badguys[i].size > gEngine.Player.pos_y-0.3f &&
                 Badguys[i].pos_y-Badguys[i].size < gEngine.Player.pos_y+0.3f &&
                 Badguys[i].pos_x+Badguys[i].size > gEngine.Player.pos_x-0.3f &&
@@ -63,9 +86,14 @@ void EnemyHandler::Update()
 
             Badguys[i].pos_y += Badguys[i].speed * gEngine.dtime;
             Badguys[i].pos_x = Badguys[i].start_x + Badguys[i].amp*sin(2.0f*PI*Badguys[i].freq);
-            Badguys[i].rot = Badguys[i].rotamp*sin(2.0f*PI*Badguys[i].freq);
 
-            Badguys[i].freq += 1 * gEngine.dtime;
+            if(Badguys[i].rottype==0) 
+            {
+                Badguys[i].rot = Badguys[i].rotamp*sin(2.0f*PI*Badguys[i].freq);
+                Badguys[i].freq += 1 * gEngine.dtime;
+            }
+            else
+                Badguys[i].rot = Badguys[i].rotamp * gEngine.dtime;
 
             if(Badguys[i].attacktype >= 0)
                 Badguys[i].Attack();
@@ -132,23 +160,42 @@ void EnemyHandler::Update()
                 case 6:
                 case 7:
                 case 8:
+                    Badguys[i].rottype = 1;
                     Badguys[i].attacktype = -1;
                     Badguys[i].amp = 0;
-                    Badguys[i].rotamp = 0.1f;
+                    Badguys[i].rotamp = 100.0f;
                     Badguys[i].attacktime = 0;
                     Badguys[i].size = model[type].size;
                     Badguys[i].model = model[type].model;
                     Badguys[i].texture = gEngine.rocktextures[level];
 
                     Badguys[i].health = 5*(type+1);
-                    if(level == 4)
+                    if(level == 3)
                         Badguys[i].health = 1;
                 break;
             }
+
             Badguys[i].level = rand()%MAX_LASER_FILES; // Laser power level
+
             Badguys[i].pos_y = -7;
             Badguys[i].start_x = (rand()%12) -6;
-            Badguys[i].alive = true;
+
+            bool spawn = true;
+            for(int x=0;x<numberofbadies;x++)
+                if(i!=x)
+                {
+                    if(Badguys[x].pos_y+Badguys[x].size > Badguys[i].pos_y-Badguys[i].size &&
+                        Badguys[x].pos_y-Badguys[x].size < Badguys[i].pos_y+Badguys[i].size &&
+                        Badguys[x].pos_x+Badguys[x].size > Badguys[i].pos_x-Badguys[i].size &&
+                        Badguys[x].pos_x-Badguys[x].size < Badguys[i].pos_x+Badguys[i].size)
+                    {
+                        spawn = false;
+                        break;
+                    } 
+                }
+
+            if(spawn)
+                Badguys[i].alive = true;
         }
     } 
 }
@@ -365,7 +412,10 @@ void Entity::Draw()
 
     glPushMatrix();
     glTranslatef(pos_x,0,pos_y);
-    glRotatef(rot,0,0,1);
+    if(rottype>0)
+        glRotatef(rot,1,1,1);
+    else
+        glRotatef(rot,0,0,1);
     gEngine.DrawModel(model,texture);
     glPopMatrix();
 
