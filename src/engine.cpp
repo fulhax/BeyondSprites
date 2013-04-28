@@ -353,6 +353,20 @@ void LaserHandler::Draw()
                                 gEngine.Player.health = 0;
                         }
                     }
+                    else
+                    {
+                        if(gEngine.Player.alive)
+                        {
+                            pitch=rand()%30;
+                            pitch=pitch/10+0.85f;
+
+                            alSourcef(gEngine.killsound, AL_PITCH, pitch);
+                            alSourcePlay(gEngine.killsound);
+
+                            gEngine.Player.alive = false;
+                            gEngine.SpawnParticles(0,0.2f, 0.2f, 0.02f, 30, 1, gEngine.Player.pos_x, gEngine.Player.pos_y);
+                        }
+                    }
                 }
             }
 
@@ -690,14 +704,20 @@ void Engine::MainLoop()
     {
         PlayMusic();
         
+        if(glfwGetKey(GLFW_KEY_ESC) == GLFW_PRESS)
+            Running = false;
+
+        if(InMenu)
+        {
+            
+            continue;
+        }
+
         currtime = glfwGetTime();
         dtime = currtime - oldtime;
         oldtime = currtime;
         if((int)badiecounter < MAX_BADIES)
             badiecounter += 0.2f * dtime;
-        
-        if(glfwGetKey(GLFW_KEY_ESC) == GLFW_PRESS)
-            Running = false;
 
         if(glfwGetKey('R') == GLFW_PRESS)
             Reset();

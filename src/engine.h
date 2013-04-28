@@ -345,7 +345,9 @@ struct Engine
     void DrawPowerup();
     void DrawShield();
     void Reset();
-    
+
+    bool InMenu;
+
     float screenflicker;
 };
 
