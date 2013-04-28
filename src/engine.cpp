@@ -276,9 +276,9 @@ void LaserHandler::Draw()
                             if(gEngine.Enemies.Badguys[e].randtype > 2)
                             {
                                 if(gEngine.Enemies.Badguys[e].level != 3)
-                                    gEngine.SpawnParticles(4, 0.2f, 0.2f, 0.02f, 30, 1, gEngine.Enemies.Badguys[e].pos_x, gEngine.Enemies.Badguys[e].pos_y);
+                                    gEngine.SpawnParticles(4, 0.2f, 1.2f, 0.02f, 5, 1, gEngine.Enemies.Badguys[e].pos_x, gEngine.Enemies.Badguys[e].pos_y);
                                 else
-                                    gEngine.SpawnParticles(2+(rand()%2), 0.2f, 0.2f, 0.02f, 30, 1, gEngine.Enemies.Badguys[e].pos_x, gEngine.Enemies.Badguys[e].pos_y);
+                                    gEngine.SpawnParticles(2+(rand()%2), 0.2f, 0.8f, 0.02f, 5, 1, gEngine.Enemies.Badguys[e].pos_x, gEngine.Enemies.Badguys[e].pos_y);
                             }
                             else
                             {
@@ -472,7 +472,7 @@ int Engine::Init()
 
     glfwInit();
 
-    if(glfwOpenWindow(640,480,8,8,8,0,24,8,GLFW_WINDOW) != true)
+    if(glfwOpenWindow(1920,1200,8,8,8,0,24,8,GLFW_WINDOW) != true)
     {
         fprintf(stderr,"ohnos glfw pooped\n");
         return 0;
@@ -809,28 +809,42 @@ void ParticleSystem::Update()
             glBindTexture(GL_TEXTURE_2D, gEngine.particletextures[type]);
             glTranslatef(particles[i].pos[0],0,particles[i].pos[1]);
 
-            float size = ((particles[i].life/plifetime) * maxsize) / 2.0f;
+            if(type!=1 && type!=0)
+                glRotatef(particles[i].rotation,0,1,0);
+
+            float size;
+            if(type==0||type==1)
+                size = ((particles[i].life/plifetime) * maxsize) / 2.0f;
+            else if(type == 4)
+            {
+                glColor4f(1,1,1,(particles[i].life/plifetime));
+                size = 0.2f+((1-(particles[i].life/plifetime)) * maxsize) / 2.0f;
+            }
+            else
+                size = 0.35f;
+
             switch(type)
             {
-                case 0: case 1:
-                    glBlendFunc(GL_ONE,GL_ONE);
+            case 0: case 1:
+                glBlendFunc(GL_ONE,GL_ONE);
                 break;
-                default:
-                    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+            default:
+                glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
                 break;
             }
             glBegin(GL_QUADS);
-                glTexCoord2f(0,0);
-                glVertex3f(-size,0.2f,-size);
-                glTexCoord2f(0,1);
-                glVertex3f(-size,0.2f,size);
-                glTexCoord2f(1,1);
-                glVertex3f(size,0.2f,size);
-                glTexCoord2f(1,0);
-                glVertex3f(size,0.2f,-size);
+            glTexCoord2f(0,0);
+            glVertex3f(-size,0.2f,-size);
+            glTexCoord2f(0,1);
+            glVertex3f(-size,0.2f,size);
+            glTexCoord2f(1,1);
+            glVertex3f(size,0.2f,size);
+            glTexCoord2f(1,0);
+            glVertex3f(size,0.2f,-size);
             glEnd();
             glDisable(GL_BLEND);
             glPopMatrix();
+            glColor4f(1,1,1,1);
 
             particles[i].pos[0] += (particles[i].vel * particles[i].dir[0]) * gEngine.dtime;
             particles[i].pos[1] += (particles[i].vel * particles[i].dir[1]) * gEngine.dtime;
@@ -850,6 +864,7 @@ void ParticleSystem::Update()
 
                 particles[i].vel = speed;
                 particles[i].life = plifetime;
+                particles[i].rotation=((float)(rand()%360));
                 ratetick = 0;
             }
         }
