@@ -1001,7 +1001,6 @@ void ParticleSystem::Update()
             glBindTexture(GL_TEXTURE_2D, gEngine.particletextures[type]);
             glTranslatef(particles[i].pos[0],0,particles[i].pos[1]);
 
-            if(type!=1 && type!=0)
                 glRotatef(particles[i].rotation,0,1,0);
 
             float size = 0.35f;
@@ -1051,7 +1050,10 @@ void ParticleSystem::Update()
 
                 particles[i].vel = speed;
                 particles[i].life = plifetime;
-                particles[i].rotation=((float)(rand()%360));
+                if(type==0 || type==1)
+                    particles[i].rotation=((float)(rand()%4)*90);
+                else
+                    particles[i].rotation=((float)(rand()%360));
                 ratetick = 0;
             }
         }
