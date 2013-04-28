@@ -47,7 +47,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = game$(EXEEXT)
+bin_PROGRAMS = BeyondSprites$(EXEEXT)
 subdir = bin
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/depcomp
@@ -60,9 +60,10 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_game_OBJECTS = main.$(OBJEXT) engine.$(OBJEXT) font.$(OBJEXT)
-game_OBJECTS = $(am_game_OBJECTS)
-game_LDADD = $(LDADD)
+am_BeyondSprites_OBJECTS = main.$(OBJEXT) engine.$(OBJEXT) \
+	font.$(OBJEXT)
+BeyondSprites_OBJECTS = $(am_BeyondSprites_OBJECTS)
+BeyondSprites_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -92,8 +93,8 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(game_SOURCES)
-DIST_SOURCES = $(game_SOURCES)
+SOURCES = $(BeyondSprites_SOURCES)
+DIST_SOURCES = $(BeyondSprites_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -208,9 +209,11 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CXXFLAGS = -Wall -O2 -g -I../lib/glfw/include
+
+#AM_CXXFLAGS = -Wall -O2 -g
+AM_CXXFLAGS = -Wall -O2
 AM_LDFLAGS = -L../lib/glfw/lib -lglfw -lGL -lGLU -lassimp -lopenal -lalut
-game_SOURCES = main.cpp engine.cpp font.cpp
+BeyondSprites_SOURCES = main.cpp engine.cpp font.cpp
 all: all-am
 
 .SUFFIXES:
@@ -287,9 +290,9 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
-game$(EXEEXT): $(game_OBJECTS) $(game_DEPENDENCIES) $(EXTRA_game_DEPENDENCIES) 
-	@rm -f game$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(game_OBJECTS) $(game_LDADD) $(LIBS)
+BeyondSprites$(EXEEXT): $(BeyondSprites_OBJECTS) $(BeyondSprites_DEPENDENCIES) $(EXTRA_BeyondSprites_DEPENDENCIES) 
+	@rm -f BeyondSprites$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(BeyondSprites_OBJECTS) $(BeyondSprites_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
