@@ -109,6 +109,9 @@ void EnemyHandler::Update()
             int type = rand()%MAX_MODELS;
             int level = rand()%4;
             Badguys[i].randtype = type;
+            
+            Badguys[i].level = rand()%MAX_LASER_FILES; // Laser power level
+
             switch(type)
             {
                 default:
@@ -176,8 +179,6 @@ void EnemyHandler::Update()
                         Badguys[i].health = 1;
                 break;
             }
-
-            Badguys[i].level = rand()%MAX_LASER_FILES; // Laser power level
 
             Badguys[i].pos_y = -((rand()%3)+7);
             Badguys[i].start_x = (rand()%12) -6;
@@ -820,13 +821,13 @@ void ParticleSystem::Update()
             }
             glBegin(GL_QUADS);
                 glTexCoord2f(0,0);
-                glVertex3f(-size,0.0f,-size);
+                glVertex3f(-size,0.2f,-size);
                 glTexCoord2f(0,1);
-                glVertex3f(-size,0.0f,size);
+                glVertex3f(-size,0.2f,size);
                 glTexCoord2f(1,1);
-                glVertex3f(size,0.0f,size);
+                glVertex3f(size,0.2f,size);
                 glTexCoord2f(1,0);
-                glVertex3f(size,0.0f,-size);
+                glVertex3f(size,0.2f,-size);
             glEnd();
             glDisable(GL_BLEND);
             glPopMatrix();
