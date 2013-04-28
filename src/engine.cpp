@@ -95,7 +95,7 @@ void EnemyHandler::Update()
                 Badguys[i].freq += 1 * gEngine.dtime;
             }
             else
-                Badguys[i].rot = Badguys[i].rotamp * gEngine.dtime;
+                Badguys[i].rot += Badguys[i].rotamp * gEngine.dtime;
 
             if(Badguys[i].attacktype >= 0)
                 Badguys[i].Attack();
@@ -127,6 +127,7 @@ void EnemyHandler::Update()
                     Badguys[i].texture = model[type].textures[level];
                     Badguys[i].attacktype = 1;
                     Badguys[i].worth = 10*(level+1);
+                    Badguys[i].rot=0;
 
                     Badguys[i].rotamp = 0;
                 break;
@@ -145,6 +146,7 @@ void EnemyHandler::Update()
                     Badguys[i].attacktype = 0;
                     Badguys[i].worth = 5*(level+1);
                     Badguys[i].rotamp = 0.2f;
+                    Badguys[i].rot=0;
                 break;
                 case 2:
                     Badguys[i].freq = rand()%10;
@@ -161,15 +163,17 @@ void EnemyHandler::Update()
                     Badguys[i].attacktype = 0;
                     Badguys[i].worth = 7*(level+1);
                     Badguys[i].rotamp = 0.1f;
+                    Badguys[i].rot=0;
                 break;
                 case 3:
                 case 4:
                 case 5:
                 case 6:
+                    Badguys[i].rot=0;
                     Badguys[i].rottype = 1;
                     Badguys[i].attacktype = -1;
                     Badguys[i].amp = 0;
-                    Badguys[i].rotamp = 150.0f;
+                    Badguys[i].rotamp = 50.0f;
                     Badguys[i].attacktime = 0;
                     Badguys[i].size = model[type].size;
                     Badguys[i].model = model[type].model;
