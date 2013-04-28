@@ -163,12 +163,13 @@ void EnemyHandler::Update()
                     Badguys[i].rottype = 1;
                     Badguys[i].attacktype = -1;
                     Badguys[i].amp = 0;
-                    Badguys[i].rotamp = 100.0f;
+                    Badguys[i].rotamp = 150.0f;
                     Badguys[i].attacktime = 0;
                     Badguys[i].size = model[type].size;
                     Badguys[i].model = model[type].model;
                     Badguys[i].texture = gEngine.rocktextures[level];
 
+                    Badguys[i].level = level;
                     Badguys[i].health = 5*(type+1);
                     if(level == 3)
                         Badguys[i].health = 1;
@@ -272,6 +273,8 @@ void LaserHandler::Draw()
 
                             gEngine.Enemies.Badguys[e].alive = false;
                             gEngine.score += gEngine.Enemies.Badguys[e].worth;
+
+                            gEngine.SpawnParticles(0.2f, 0.2f, 0.02f, 30, 1, gEngine.Enemies.Badguys[e].pos_x, gEngine.Enemies.Badguys[e].pos_y);
 
                             int loot = rand()%10000;
                             if(loot > 6000)
@@ -542,6 +545,9 @@ int Engine::Init()
         Twinky[i].pos_z = (rand()%120)-60;
     }
 
+    for(int i=0;i<MAX_PARTICLE_FILES;i++)
+        particletextures[i] = LoadTexture(ParticleTextures[i]);
+
     Player.model = LoadModel("./artsyfartsystuff/playership.obj");
     Player.texture = LoadTexture("./artsyfartsystuff/playership.tga");
 
@@ -723,6 +729,7 @@ void Engine::MainLoop()
             Player.Draw();
         }
 
+        DrawParticles();
         DrawPowerup();
         DrawStars();
         DrawScore();
@@ -730,6 +737,86 @@ void Engine::MainLoop()
         glfwSwapBuffers();
         gEngine.Enemies.numberofbadies = badiecounter;
     }
+}
+
+void ParticleSystem::Update()
+{
+    lifetime -= gEngine.dtime;
+    ratetick += gEngine.dtime;
+    if(lifetime <= 0)
+        alive = false;
+
+    for(int i=0;i<MAX_PARTICLES;i++)
+    {
+        if(particles[i].life > 0)
+        {
+            particles[i].life -= gEngine.dtime;
+            glPushMatrix();
+            glBindTexture(GL_TEXTURE_2D, gEngine.particletextures[0]);
+            glTranslatef(particles[i].pos[0],0,particles[i].pos[1]);
+
+            float size = ((particles[i].life/plifetime) * maxsize) / 2.0f;
+            glBegin(GL_QUADS);
+                glTexCoord2f(0,0);
+                glVertex3f(-size,0.0f,-size);
+                glTexCoord2f(0,1);
+                glVertex3f(-size,0.0f,size);
+                glTexCoord2f(1,1);
+                glVertex3f(size,0.0f,size);
+                glTexCoord2f(1,0);
+                glVertex3f(size,0.0f,-size);
+            glEnd();
+            glPopMatrix();
+
+            particles[i].pos[0] += (particles[i].vel * particles[i].dir[0]) * gEngine.dtime;
+            particles[i].pos[1] += (particles[i].vel * particles[i].dir[1]) * gEngine.dtime;
+        }
+        else
+        {
+            if(ratetick > rate && alive)
+            {
+                float randdir[2];
+                randdir[0] = ((float)(rand()%200)/100)-1;
+                randdir[1] = ((float)(rand()%200)/100)-1;
+
+                particles[i].pos[0] = pos_x;
+                particles[i].pos[1] = pos_y;
+                particles[i].dir[0] = randdir[0];
+                particles[i].dir[1] = randdir[1];
+
+                particles[i].vel = speed;
+                particles[i].life = plifetime;
+                ratetick = 0;
+            }
+        }
+    }
+}
+
+int Engine::SpawnParticles(float lifetime, float plifetime, float rate, float speed, float maxsize, float pos_x, float pos_y)
+{
+    for(int i=0;i<MAX_PARTICLE_SYSTEMS;i++)
+        if(!psystems[i].alive)
+        {
+            psystems[i].pos_x = pos_x;
+            psystems[i].pos_y = pos_y;
+
+            psystems[i].maxsize = maxsize;
+
+            psystems[i].ratetick = 0;
+            psystems[i].rate = rate;
+            psystems[i].lifetime = lifetime;
+            psystems[i].plifetime = plifetime;
+            psystems[i].speed = speed;
+            psystems[i].alive = true;
+            return i;
+        }
+    return 0;
+}
+
+void Engine::DrawParticles()
+{
+    for(int i=0;i<MAX_PARTICLE_SYSTEMS;i++)
+        psystems[i].Update();
 }
 
 void Engine::DrawShield()

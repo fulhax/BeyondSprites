@@ -30,6 +30,11 @@
 #define MAX_STARS 200
 #define MAX_POWERUP 5
 
+#define MAX_PARTICLES 256
+#define MAX_PARTICLE_SYSTEMS 256
+
+#define MAX_PARTICLE_FILES 5
+
 static char LaserFiles[][40] = {
    "./artsyfartsystuff/pewpewblue.tga",
    "./artsyfartsystuff/pewpewdarkness.tga",
@@ -122,6 +127,14 @@ static char BombTextures[][40] = {
     "./artsyfartsystuff/bomb2.tga",
     "./artsyfartsystuff/megabomb1.tga",
     "./artsyfartsystuff/megabomb2.tga"
+};
+
+static char ParticleTextures[][45] = {
+    "./artsyfartsystuff/explosionparticle1.tga",
+    "./artsyfartsystuff/explosionparticle2.tga",
+    "./artsyfartsystuff/iceparticle1.tga",
+    "./artsyfartsystuff/iceparticle2.tga",
+    "./artsyfartsystuff/smokepuff.tga"
 };
 
 struct Laser
@@ -241,65 +254,97 @@ struct PowerUp
     float deathtime;
 };
 
+struct Particle
+{
+    float pos[2];
+    float dir[2];
+    float vel;
+
+    float life;
+};
+
+struct ParticleSystem
+{
+    Particle particles[MAX_PARTICLES];
+    bool alive;
+
+    float pos_x;
+    float pos_y;
+    float lifetime;
+    float plifetime;
+    float rate;
+    float speed;
+
+    float maxsize;
+    float ratetick;
+
+    void Update();
+};
+
 struct Engine
 {
-        float badiecounter;
-        Entity Player;
-        bool Running;
+    float badiecounter;
+    Entity Player;
+    bool Running;
 
-        unsigned int Music;
-        Font defFont;
-        float shield_anim;
-        int currshield;
-        float shield;
-        int score;
+    unsigned int Music;
+    Font defFont;
+    float shield_anim;
+    int currshield;
+    float shield;
+    int score;
 
-        aiScene* Shield;
-        unsigned int shieldtextures[MAX_TEXTURES];
+    int SpawnParticles(float lifetime, float plifetime, float rate, float speed, float maxsize,float pos_x, float pos_y);
+    void DrawParticles();
+    ParticleSystem psystems[MAX_PARTICLE_SYSTEMS];
 
-        aiScene* Powerup;
-        unsigned int poweruptextures[2];
+    aiScene* Shield;
+    unsigned int shieldtextures[MAX_TEXTURES];
 
-        aiScene* Star;
-        unsigned int startextures[MAX_TEXTURES];
+    aiScene* Powerup;
+    unsigned int poweruptextures[2];
 
-        aiScene* Bomb;
-        unsigned int bombtextures[MAX_TEXTURES];
-        unsigned int rocktextures[MAX_TEXTURES];
+    aiScene* Star;
+    unsigned int startextures[MAX_TEXTURES];
 
-        Stars Twinky[MAX_STARS];
-        PowerUp Boost[MAX_POWERUP];
+    aiScene* Bomb;
+    unsigned int bombtextures[MAX_TEXTURES];
+    unsigned int rocktextures[MAX_TEXTURES];
+    unsigned int particletextures[MAX_PARTICLE_FILES];
 
-        unsigned int lasersound;
-        unsigned int hitsound;
-        unsigned int killsound;
-        unsigned int powerupsound;
-        unsigned int shieldupsound;
+    Stars Twinky[MAX_STARS];
+    PowerUp Boost[MAX_POWERUP];
 
-        unsigned int bigbadaboomsound;
-        unsigned int fontimage;
+    unsigned int lasersound;
+    unsigned int hitsound;
+    unsigned int killsound;
+    unsigned int powerupsound;
+    unsigned int shieldupsound;
 
-        LaserHandler PewPew;
-        EnemyHandler Enemies;
+    unsigned int bigbadaboomsound;
+    unsigned int fontimage;
 
-        float dtime;
-        unsigned int LoadSound(const char* filename);
-        unsigned int LoadTexture(const char* filename);
-        void DrawModel(aiScene* model, unsigned int texture);
-        aiScene* LoadModel(const char* filename);
+    LaserHandler PewPew;
+    EnemyHandler Enemies;
 
-        void DrawScore();
-        void PlayMusic();
+    float dtime;
+    unsigned int LoadSound(const char* filename);
+    unsigned int LoadTexture(const char* filename);
+    void DrawModel(aiScene* model, unsigned int texture);
+    aiScene* LoadModel(const char* filename);
 
-        int Init();
-        void MainLoop();
-        void Shutdown();
-        void DrawStars();
-        void DrawPowerup();
-        void DrawShield();
-        void Reset();
-        
-        float screenflicker;
+    void DrawScore();
+    void PlayMusic();
+
+    int Init();
+    void MainLoop();
+    void Shutdown();
+    void DrawStars();
+    void DrawPowerup();
+    void DrawShield();
+    void Reset();
+    
+    float screenflicker;
 };
 
 extern Engine gEngine;
