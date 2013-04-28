@@ -24,7 +24,7 @@
 #define MAX_MUSIC 13
 #define MAX_LASER_FILES 8
 
-#define MAX_MODELS 9
+#define MAX_MODELS 7
 #define MAX_TEXTURES 4
 
 #define MAX_STARS 200
@@ -48,9 +48,9 @@ static char BaddieModels[][40] = {
     "./artsyfartsystuff/rock3_1.obj", // Liten
     "./artsyfartsystuff/rock3_2.obj",
     "./artsyfartsystuff/rock2_1.obj", // Mellan
-    "./artsyfartsystuff/rock2_2.obj",
-    "./artsyfartsystuff/rock1_1.obj", // Stor
-    "./artsyfartsystuff/rock1_2.obj"
+    "./artsyfartsystuff/rock2_2.obj"
+/*    "./artsyfartsystuff/rock1_1.obj", // Stor
+    "./artsyfartsystuff/rock1_2.obj"*/
 };
 
 static char RockTextures[][40] = {

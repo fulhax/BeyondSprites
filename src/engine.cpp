@@ -41,7 +41,7 @@ void EnemyHandler::Update()
     {
         if(Badguys[i].alive)
         {
-            for(int x=0;x<numberofbadies;x++)
+/*            for(int x=0;x<numberofbadies;x++)
                 if(i!=x)
                 {
                     if(Badguys[x].pos_y+Badguys[x].size > Badguys[i].pos_y-Badguys[i].size &&
@@ -52,8 +52,10 @@ void EnemyHandler::Update()
                         pitch=rand()%30;
                         pitch=pitch/10+0.85f;
 
+                        if(Badguys[x].pos_y > -6.5f) {
                         alSourcef(gEngine.killsound, AL_PITCH, pitch);
                         alSourcePlay(gEngine.killsound);
+                        }
 
                         if(Badguys[i].health < Badguys[x].health)
                             Badguys[i].alive = false;
@@ -61,7 +63,7 @@ void EnemyHandler::Update()
                             Badguys[x].alive = false;
                         break;
                     } 
-                }
+                }*/
 
             if(Badguys[i].pos_y+Badguys[i].size > gEngine.Player.pos_y-0.3f &&
                 Badguys[i].pos_y-Badguys[i].size < gEngine.Player.pos_y+0.3f &&
@@ -158,8 +160,6 @@ void EnemyHandler::Update()
                 case 4:
                 case 5:
                 case 6:
-                case 7:
-                case 8:
                     Badguys[i].rottype = 1;
                     Badguys[i].attacktype = -1;
                     Badguys[i].amp = 0;
@@ -519,9 +519,6 @@ int Engine::Init()
 
     Enemies.model[5].size = 0.9f;
     Enemies.model[6].size = 0.9f;
-
-    Enemies.model[7].size = 1.6f;
-    Enemies.model[8].size = 1.6f;
 
     for(int i=0;i<2;i++)
         poweruptextures[i] = LoadTexture(PowerupTextures[i]);
