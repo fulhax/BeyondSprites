@@ -596,8 +596,6 @@ int Engine::Init()
     for(int i=0;i<MAX_PARTICLE_FILES;i++)
         particletextures[i] = LoadTexture(ParticleTextures[i]);
 
-    titleimage = LoadTexture("./artsyfartsystuff/title.tga");
-
     Player.model = LoadModel("./artsyfartsystuff/playership.obj");
     Player.texture = LoadTexture("./artsyfartsystuff/playership.tga");
 
@@ -722,7 +720,9 @@ void Engine::MainLoop()
     static float oldtime = glfwGetTime();
     float currtime = 0;
     bool joystickconnected=glfwGetJoystickParam(GLFW_JOYSTICK_1,GLFW_PRESENT);
-    int joystickbuttons=glfwGetJoystickParam(GLFW_JOYSTICK_1,GLFW_BUTTONS);
+    int joystickbuttons;
+    if(joystickconnected)
+        joystickbuttons=glfwGetJoystickParam(GLFW_JOYSTICK_1,GLFW_BUTTONS);
     
     while(Running)
     {
@@ -739,58 +739,11 @@ void Engine::MainLoop()
         {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            glLoadIdentity();
-
-            glTranslatef(0,0,-15);
-            glRotatef(90,1,0,0);
-            glColor3f(1.0,1.0,1.0);
-
-            glEnable(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, titleimage);
-
-            glDisable(GL_DEPTH_TEST);
-            glDisable(GL_CULL_FACE);
-
-            glMatrixMode(GL_PROJECTION);
-            glEnable(GL_ALPHA_TEST);
-            glAlphaFunc(GL_GEQUAL,0.5);
-            glPushMatrix();
-                glLoadIdentity();
-                glOrtho(0,640,480,0,-1,1);
-                glMatrixMode(GL_MODELVIEW);
-                glPushMatrix();
-                    glLoadIdentity();
-                    glBegin(GL_QUADS);
-                    glTexCoord2f(0,0);
-                    glVertex2i(0,0);
-                    glTexCoord2f(0,1);
-                    glVertex2i(0,160);
-                    glTexCoord2f(1,1);
-                    glVertex2i(640,160);
-                    glTexCoord2f(1,0);
-                    glVertex2i(640,0);
-                    glEnd();
-                    glMatrixMode(GL_PROJECTION);
-                glPopMatrix();
-                glMatrixMode(GL_MODELVIEW);
-
-                glEnable(GL_DEPTH_TEST);
-                glEnable(GL_CULL_FACE);
-            glPopMatrix();
-
-            glPrint(&defFont, 32, 130, "-=] Highscore [=-");
-            glPrint(&defFont, 32,430, "Press [Enter] to start");
+            glPrint(&defFont, 80, 10, "[GameName]");
+            glPrint(&defFont, 64,400, "Press any key to start");
 
             DrawStars();
- 
-            unsigned char buttons[50];
-            glfwGetJoystickButtons(GLFW_JOYSTICK_1,buttons,joystickbuttons);
-
-            if(buttons[7]==GLFW_PRESS)
-                InMenu = false;
-            if(glfwGetKey(GLFW_KEY_ENTER) == GLFW_PRESS)
-                InMenu = false;
-
+            
             glfwSwapBuffers();
             continue;
         }
@@ -815,7 +768,7 @@ void Engine::MainLoop()
 
             if(glfwGetKey(GLFW_KEY_SPACE) == GLFW_PRESS)
                 Player.Attack();
-            
+            if(joystickconnected)
             { // gamepad support
             
                 float axis[2];
@@ -1146,45 +1099,43 @@ void Engine::DrawStars()
 
 void Engine::DrawScore()
 {
+    glPrint(&defFont,3,0,  "SCORE : %d", score);
+
+    if(Player.level < (MAX_LASER_FILES-1))
+        glPrint(&defFont,3,25,"POWER : %d", Player.level);
+    else
+        glPrint(&defFont,3,25,"POWER : MAX");
+
+    glPrint(&defFont,3,50,"SHIELD: %d%%", (int)(shield*100));
+    glPrint(&defFont,3,75,"HEALTH: %d%", Player.health);
+
     if(Player.health <= 0)
     {
-        glPrint(&defFont, 16, 240,"YOU ARE DEFEATED!");
+        glPrint(&defFont, 96, 240,"YOU ARE DEFEATED!");
         if(score < 50)
-            glPrint(&defFont, 16, 285,"u mad?");
+            glPrint(&defFont, 32, 285,"u mad?");
         else if(score < 100)
-            glPrint(&defFont, 16, 285,"Did you even try to play the game?");
+            glPrint(&defFont, 32, 285,"Did you even try to play the game?");
         else if(score < 300)
-            glPrint(&defFont, 16, 285,"Not the best score i've seen");
+            glPrint(&defFont, 32, 285,"Not the best score i've seen");
         else if(score < 500)
-            glPrint(&defFont, 16, 285,"Awww, better luck next time");
+            glPrint(&defFont, 32, 285,"Awww, better luck next time");
         else if(score < 1000)
-            glPrint(&defFont, 16, 285,"Click here to download HD DLC");
+            glPrint(&defFont, 32, 285,"Click here to download HD DLC");
         else if(score < 5000)
-            glPrint(&defFont, 16, 285,"Not bad, not bad at all");
+            glPrint(&defFont, 32, 285,"Not bad, not bad at all");
         else if(score < 6000)
-            glPrint(&defFont, 16, 285,"M.m.m.monsterkill!");
+            glPrint(&defFont, 32, 285,"M.m.m.monsterkill!");
         else if(score < 7000)
-            glPrint(&defFont, 16, 285,"GODLIKE!");
+            glPrint(&defFont, 32, 285,"GODLIKE!");
         else if(score < 8000)
-            glPrint(&defFont, 16, 285,"Congratulations! You won the Internet");
+            glPrint(&defFont, 32, 285,"Congratulations! You won the Internet");
         else if(score < 9000)
-            glPrint(&defFont, 16, 285,"Is that you Mr. Norris?");
+            glPrint(&defFont, 32, 285,"Is that you Mr. Norris?");
         else if(score >= 9000)
-            glPrint(&defFont, 16, 285,"IT'S OVER 9000!!!");
+            glPrint(&defFont, 32, 285,"IT'S OVER 9000!!!");
 
-        glPrint(&defFont, 16, 330,"Press R to restart");
-    }
-    else
-    {
-        glPrint(&defFont,3,0,  "SCORE : %d", score);
-
-        if(Player.level < (MAX_LASER_FILES-1))
-            glPrint(&defFont,3,25,"POWER : %d", Player.level);
-        else
-            glPrint(&defFont,3,25,"POWER : MAX");
-
-        glPrint(&defFont,3,50,"SHIELD: %d%%", (int)(shield*100));
-        glPrint(&defFont,3,75,"HEALTH: %d%", Player.health);
+        glPrint(&defFont, 96, 330,"Press R to restart");
     }
 }
 
