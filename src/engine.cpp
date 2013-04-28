@@ -142,7 +142,7 @@ void EnemyHandler::Update()
 
                     Badguys[i].health = 5*(type+1);
                     if(level == 4)
-                        Badguys[i].health = Badguys[i].health / 2;
+                        Badguys[i].health = 1;
                 break;
             }
             Badguys[i].level = rand()%MAX_LASER_FILES; // Laser power level
