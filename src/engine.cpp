@@ -227,7 +227,7 @@ void LaserHandler::Draw()
                             gEngine.score += gEngine.Enemies.Badguys[e].worth;
 
                             int loot = rand()%10000;
-                            if(loot > 7000)
+                            if(loot > 6000)
                             {
                                 for(int l=0;l<MAX_POWERUP;l++)
                                 {
