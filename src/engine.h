@@ -260,6 +260,7 @@ struct Particle
     float pos[2];
     float dir[2];
     float vel;
+    float rotation;
 
     float life;
 };
