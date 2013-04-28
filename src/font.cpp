@@ -62,7 +62,7 @@ void glPrint(Font *font, int x,int y, const char* text, ...)
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
     glPushMatrix();
         glLoadIdentity();
-        glOrtho(0,480,640,0,-1,1);
+        glOrtho(0,640,480,0,-1,1);
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
             glLoadIdentity();
