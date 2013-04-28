@@ -145,9 +145,10 @@ void EnemyHandler::Update()
                     Badguys[i].rot=0;
 
                     Badguys[i].rotamp = 0;
+                    Badguys[i].rottype = 0;
                 break;
                 case 1:
-                    Badguys[i].freq = rand()%10;
+                    Badguys[i].freq = (rand()%8)+2;
                     Badguys[i].amp = 3;
 
                     Badguys[i].speed = 2*(level+1);
@@ -162,9 +163,11 @@ void EnemyHandler::Update()
                     Badguys[i].worth = 5*(level+1);
                     Badguys[i].rotamp = 0.2f;
                     Badguys[i].rot=0;
+                    
+                    Badguys[i].rottype = 0;
                 break;
                 case 2:
-                    Badguys[i].freq = rand()%10;
+                    Badguys[i].freq = rand()%12;
                     Badguys[i].amp = 1.1*level;
 
                     Badguys[i].speed = (1.5f*(level+1));
@@ -179,6 +182,7 @@ void EnemyHandler::Update()
                     Badguys[i].worth = 7*(level+1);
                     Badguys[i].rotamp = 0.1f;
                     Badguys[i].rot=0;
+                    Badguys[i].rottype = 0;
                 break;
                 case 3:
                 case 4:
@@ -484,6 +488,7 @@ void Engine::Reset()
     for(int i=0;i<MAX_BADIES;i++)
         Enemies.Badguys[i].alive = false;
 
+    scoreinput = 0;
     Player.attacktype = 0;
     Player.type = 1;
     Player.pos_y = 5;
@@ -499,6 +504,7 @@ void Engine::Reset()
 
 int Engine::Init()
 {
+    scoreinput = 0;
     InMenu = true;
     Enemies.numberofbadies = 0;
     int t = time(0);
@@ -798,9 +804,6 @@ void Engine::MainLoop()
         if((int)badiecounter < MAX_BADIES)
             badiecounter += 0.2f * dtime;
 
-        if(glfwGetKey('R') == GLFW_PRESS)
-            Reset();
-
         if(Player.health > 0)
         {
             if(glfwGetKey(GLFW_KEY_UP) == GLFW_PRESS)
@@ -846,12 +849,64 @@ void Engine::MainLoop()
         }
         else
         {
+            static bool keyup = false;
+            static bool keydown = false;
+            static bool keystep = false;
+            static bool restart = false;
+
             unsigned char buttons[50];
             glfwGetJoystickButtons(GLFW_JOYSTICK_1,buttons,joystickbuttons);
 
+            if(glfwGetKey(GLFW_KEY_ENTER) == GLFW_PRESS)
+                restart = true;
             if(buttons[7]==GLFW_PRESS)
+                restart = true;
+
+            if(restart)
             {
+                Score s[11];
+                FILE *h=fopen("./high.score", r);
+                if(h)
+                {
+                    for(int i=0;i<10;i++)
+                        scanf("%s %d", s[i].name, s[i].score);
+                    fclose(h);
+                }
+
                 Reset();
+            }
+
+            if(glfwGetKey(GLFW_KEY_UP) == GLFW_PRESS)
+                keyup = true;
+            if(glfwGetKey(GLFW_KEY_DOWN) == GLFW_PRESS)
+                keydown = true;
+            if(glfwGetKey(GLFW_KEY_SPACE) == GLFW_PRESS)
+                keystep = true;
+
+            if(glfwGetKey(GLFW_KEY_UP) == GLFW_RELEASE)
+            {
+                if(keyup)
+                {
+                    keyup = false;
+                    name[scoreinput] = (name[scoreinput]==90)?48:name[scoreinput]+1;
+                }
+            }
+            if(glfwGetKey(GLFW_KEY_DOWN) == GLFW_RELEASE)
+            {
+                if(keydown)
+                {
+                    keydown = false;
+                    name[scoreinput] = (name[scoreinput]==48)?90:name[scoreinput]-1;
+                }
+            }
+            if(glfwGetKey(GLFW_KEY_SPACE) == GLFW_RELEASE)
+            {
+                if(keystep)
+                {
+                    keystep = false;
+                    scoreinput++;
+                    scoreinput=scoreinput%3;
+                }
             }
         }
         if(screenflicker > 0)
@@ -1148,7 +1203,9 @@ void Engine::DrawScore()
 {
     if(Player.health <= 0)
     {
-        glPrint(&defFont, 16, 240,"YOU ARE DEFEATED!");
+        glPrint(&defFont, 16, 100, "NAME: %s", name);
+        glPrint(&defFont, 16, 130, "SCORE: %d", score);
+        glPrint(&defFont, 16, 240, "YOU ARE DEFEATED!");
         if(score < 50)
             glPrint(&defFont, 16, 285,"u mad?");
         else if(score < 100)
@@ -1172,7 +1229,7 @@ void Engine::DrawScore()
         else if(score >= 9000)
             glPrint(&defFont, 16, 285,"IT'S OVER 9000!!!");
 
-        glPrint(&defFont, 16, 330,"Press R to restart");
+        glPrint(&defFont, 16, 330,"Press [Enter] to restart");
     }
     else
     {

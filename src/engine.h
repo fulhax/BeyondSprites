@@ -137,6 +137,14 @@ static char ParticleTextures[][45] = {
     "./artsyfartsystuff/smokepuff.tga"
 };
 
+static char name[4] = "AAA";
+
+struct Score
+{
+    char name[4];
+    int score;
+};
+
 struct Laser
 {
     bool alive;
@@ -351,6 +359,7 @@ struct Engine
     bool InMenu;
 
     float screenflicker;
+    int scoreinput;
 };
 
 extern Engine gEngine;
