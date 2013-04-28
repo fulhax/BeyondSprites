@@ -62,7 +62,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="GLFW.lib opengl32.lib glu32.lib assimp.lib alut.lib OpenAL32.lib"
-				OutputFile="$(OutDir)\Beyond Pixels.exe"
+				OutputFile="$(OutDir)\Beyond Sprites.exe"
 				AdditionalLibraryDirectories="&quot;C:\sdks\glfw-2.7.8.bin.WIN32\lib-msvc90&quot;;&quot;C:\sdks\assimp--3.0.1270-sdk\lib\assimp_debug-dll_win32&quot;;&quot;C:\sdks\OpenAL 1.1 SDK\libs\Win32&quot;;&quot;C:\sdks\freealut-1.1.0-bin\lib&quot;"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
@@ -134,7 +134,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="GLFW.lib opengl32.lib glu32.lib assimp.lib alut.lib OpenAL32.lib"
-				OutputFile="$(OutDir)\Beyond Pixels.exe"
+				OutputFile="$(OutDir)\Beyond Sprites.exe"
 				AdditionalLibraryDirectories="&quot;C:\sdks\glfw-2.7.8.bin.WIN32\lib-msvc90&quot;;&quot;C:\sdks\assimp--3.0.1270-sdk\lib\assimp_release-dll_win32&quot;;&quot;C:\sdks\OpenAL 1.1 SDK\libs\Win32&quot;;&quot;C:\sdks\freealut-1.1.0-bin\lib&quot;"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
