@@ -275,7 +275,7 @@ struct Engine
         unsigned int powerupsound;
         unsigned int shieldupsound;
 
-        unsgined int bigbadaboomsound;
+        unsigned int bigbadaboomsound;
         unsigned int fontimage;
 
         LaserHandler PewPew;
