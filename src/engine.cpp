@@ -177,7 +177,7 @@ void EnemyHandler::Update()
 
             Badguys[i].level = rand()%MAX_LASER_FILES; // Laser power level
 
-            Badguys[i].pos_y = -7;
+            Badguys[i].pos_y = -((rand()%3)+7);
             Badguys[i].start_x = (rand()%12) -6;
 
             bool spawn = true;
