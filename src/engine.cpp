@@ -812,22 +812,17 @@ void ParticleSystem::Update()
             if(type!=1 && type!=0)
                 glRotatef(particles[i].rotation,0,1,0);
 
-            float size;
-            if(type==0||type==1)
-                size = ((particles[i].life/plifetime) * maxsize) / 2.0f;
-            else if(type == 4)
-            {
-                glColor4f(1,1,1,(particles[i].life/plifetime));
-                size = 0.2f+((1-(particles[i].life/plifetime)) * maxsize) / 2.0f;
-            }
-            else
-                size = 0.35f;
+            float size = 0.35f;
 
             switch(type)
             {
             case 0: case 1:
                 glBlendFunc(GL_ONE,GL_ONE);
+                size = ((particles[i].life/plifetime) * maxsize) / 2.0f;
                 break;
+            case 4:
+                glColor4f(1,1,1,(particles[i].life/plifetime));
+                size = 0.2f+((1-(particles[i].life/plifetime)) * maxsize) / 2.0f;
             default:
                 glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
                 break;
