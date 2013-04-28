@@ -728,8 +728,10 @@ void Engine::MainLoop()
     static float oldtime = glfwGetTime();
     float currtime = 0;
     bool joystickconnected=glfwGetJoystickParam(GLFW_JOYSTICK_1,GLFW_PRESENT);
-    int joystickbuttons=glfwGetJoystickParam(GLFW_JOYSTICK_1,GLFW_BUTTONS);
-    
+    int joystickbuttons;
+    if(joystickconnected)
+        joystickbuttons=glfwGetJoystickParam(GLFW_JOYSTICK_1,GLFW_BUTTONS);
+
     while(Running)
     {
         currtime = glfwGetTime();
@@ -818,7 +820,7 @@ void Engine::MainLoop()
 
             if(glfwGetKey(GLFW_KEY_SPACE) == GLFW_PRESS)
                 Player.Attack();
-            
+            if(joystickconnected)
             { // gamepad support
             
                 float axis[2];
