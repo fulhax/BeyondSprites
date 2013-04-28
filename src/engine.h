@@ -24,10 +24,10 @@
 #define MAX_MUSIC 13
 #define MAX_LASER_FILES 8
 
-#define MAX_MODELS 2
+#define MAX_MODELS 3
 #define MAX_TEXTURES 4
 
-#define MAX_STARS 100
+#define MAX_STARS 200
 #define MAX_POWERUP 5
 
 static char LaserFiles[][40] = {
@@ -43,7 +43,8 @@ static char LaserFiles[][40] = {
 
 static char BaddieModels[][40] = {
     "./artsyfartsystuff/baddie1.obj",
-    "./artsyfartstytuff/baddie2.obj"
+    "./artsyfartsystuff/baddie2.obj",
+    "./artsyfartsystuff/baddie3.obj"
 };
 
 static char BaddieTextures_2[][40] = {
@@ -58,6 +59,13 @@ static char BaddieTextures_1[][40] = {
     "./artsyfartsystuff/baddie2.tga",
     "./artsyfartsystuff/baddie3.tga",
     "./artsyfartsystuff/baddie4.tga"
+};
+
+static char BaddieTextures_3[][40] = {
+    "./artsyfartsystuff/enemy3_1.tga",
+    "./artsyfartsystuff/enemy3_2.tga",
+    "./artsyfartsystuff/enemy3_3.tga",
+    "./artsyfartsystuff/enemy3_4.tga"
 };
 
 static char MusicFiles[][40] = {
@@ -94,6 +102,13 @@ static char ShieldTextures[][40] = {
     "./artsyfartsystuff/shields_2.tga",
     "./artsyfartsystuff/shields_3.tga",
     "./artsyfartsystuff/shields_4.tga"
+};
+
+static char BombTextures[][40] = {
+    "./artsyfartsystuff/bomb1.tga",
+    "./artsyfartsystuff/bomb2.tga",
+    "./artsyfartsystuff/megabomb1.tga",
+    "./artsyfartsystuff/megabomb2.tga"
 };
 
 struct Laser
@@ -170,6 +185,9 @@ struct Entity
     float pos_x;
     float pos_y;
 
+    float rot;
+    float rotamp;
+
     float nextattack;
     float attacktime;
 
@@ -199,6 +217,9 @@ struct PowerUp
     bool alive;
     int type;
 
+    float bombflicker;
+    int bombstate;
+
     float pos_x;
     float pos_y;
     float rot;
@@ -227,6 +248,9 @@ struct Engine
 
         aiScene* Star;
         unsigned int startextures[MAX_TEXTURES];
+
+        aiScene* Bomb;
+        unsigned int bombtextures[MAX_TEXTURES];
 
         Stars Twinky[MAX_STARS];
         PowerUp Boost[MAX_POWERUP];
@@ -258,6 +282,8 @@ struct Engine
         void DrawPowerup();
         void DrawShield();
         void Reset();
+        
+        float screenflicker;
 };
 
 extern Engine gEngine;

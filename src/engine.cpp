@@ -17,6 +17,9 @@ Entity::Entity()
     attacktype = 0;
     worth = 5;
 
+    rotamp = 0;
+    rot = 0;
+
     alive = false;
 }
 
@@ -60,6 +63,8 @@ void EnemyHandler::Update()
 
             Badguys[i].pos_y += Badguys[i].speed * gEngine.dtime;
             Badguys[i].pos_x = Badguys[i].start_x + Badguys[i].amp*sin(2.0f*PI*Badguys[i].freq);
+            Badguys[i].rot = Badguys[i].rotamp*sin(2.0f*PI*Badguys[i].freq);
+
             Badguys[i].freq += 1 * gEngine.dtime;
 
             Badguys[i].Attack();
@@ -70,7 +75,7 @@ void EnemyHandler::Update()
         }
         else
         {
-            int type = rand()%2;
+            int type = rand()%MAX_MODELS;
             int level = rand()%4;
             switch(type)
             {
@@ -81,7 +86,7 @@ void EnemyHandler::Update()
 
                     Badguys[i].speed = 2;
                     Badguys[i].attacktime = 1;
-                    Badguys[i].health = 20*level;
+                    Badguys[i].health = 20*(level+1);
                     Badguys[i].size = model[0].size;
                     Badguys[i].model = model[0].model;
                     Badguys[i].texture = model[0].textures[level];
@@ -92,16 +97,33 @@ void EnemyHandler::Update()
                     Badguys[i].freq = rand()%10;
                     Badguys[i].amp = 3;
 
-                    Badguys[i].speed = 2*level;
+                    Badguys[i].speed = 2*(level+1);
                     Badguys[i].attacktime = 0.5f;
 
-                    Badguys[i].health = 3;
+                    Badguys[i].health = 1*(level+1);
                     Badguys[i].size = model[1].size;
                     Badguys[i].model = model[1].model;
                     Badguys[i].texture = model[1].textures[level];
 
                     Badguys[i].attacktype = 0;
                     Badguys[i].worth = 5*(level+1);
+                    Badguys[i].rotamp = 0.2f;
+                break;
+                case 2:
+                    Badguys[i].freq = rand()%10;
+                    Badguys[i].amp = 1.1*level;
+
+                    Badguys[i].speed = (1.5f*(level+1));
+                    Badguys[i].attacktime = 0.6f;
+
+                    Badguys[i].health = 5*(level+1);
+                    Badguys[i].size = model[2].size;
+                    Badguys[i].model = model[2].model;
+                    Badguys[i].texture = model[2].textures[level];
+
+                    Badguys[i].attacktype = 0;
+                    Badguys[i].worth = 7*(level+1);
+                    Badguys[i].rotamp = 0.1f;
                 break;
             }
             Badguys[i].level = rand()%MAX_LASER_FILES; // Laser power level
@@ -185,18 +207,28 @@ void LaserHandler::Draw()
                             gEngine.Enemies.Badguys[e].alive = false;
                             gEngine.score += gEngine.Enemies.Badguys[e].worth;
 
-                            int loot = rand()%10000;
-                            if(loot > 7000)
+/*                            int loot = rand()%10000;
+                            if(loot > 7000)*/
                             {
                                 for(int l=0;l<MAX_POWERUP;l++)
                                 {
                                     if(!gEngine.Boost[l].alive)
                                     {
                                         gEngine.Boost[l].deathtime = 10.0f;
-                                        gEngine.Boost[l].type = rand()%2;
+                                        gEngine.Boost[l].type = rand()%4;
                                         gEngine.Boost[l].pos_x = gEngine.Enemies.Badguys[e].pos_x;
                                         gEngine.Boost[l].pos_y = gEngine.Enemies.Badguys[e].pos_y;
                                         gEngine.Boost[l].alive = true;
+                                        gEngine.Boost[l].bombflicker = 0.1f;
+                                        switch(gEngine.Boost[i].type)
+                                        {
+                                            case 2:
+                                                gEngine.Boost[i].bombstate = 0;
+                                                break;
+                                            case 3:
+                                                gEngine.Boost[i].bombstate = 2;
+                                                break;
+                                        }
                                         break;
                                     }
                                 }
@@ -314,6 +346,7 @@ void Entity::Draw()
 
     glPushMatrix();
     glTranslatef(pos_x,0,pos_y);
+    glRotatef(rot,0,0,1);
     gEngine.DrawModel(model,texture);
     glPopMatrix();
 
@@ -347,7 +380,7 @@ void Engine::Reset()
 
 int Engine::Init()
 {
-    gEngine.Enemies.numberofbadies = 0;
+    Enemies.numberofbadies = 0;
     int t = time(0);
     srand(t);
     Music = 0;
@@ -374,6 +407,7 @@ int Engine::Init()
     glEnable(GL_TEXTURE_2D);
 
     glEnable(GL_CULL_FACE);
+    glClearColor(0,0,0,1);
 
     if(!alutInit(0,0))
     {
@@ -382,6 +416,7 @@ int Engine::Init()
     }
 
     glfwSetWindowSizeCallback(handleResize);
+    screenflicker = 0;
 
     /* Begin awesome resourcehandling */
 
@@ -399,9 +434,14 @@ int Engine::Init()
     Star = LoadModel("./artsyfartsystuff/star.obj");
     Shield = LoadModel("./artsyfartsystuff/shield.obj");
     PewPew.model = LoadModel("./artsyfartsystuff/pewpewlasers.obj");
-    Enemies.model[0].model = LoadModel("./artsyfartsystuff/baddie1.obj");
-    Enemies.model[1].model = LoadModel("./artsyfartsystuff/baddie2.obj");
-    Enemies.model[1].size = 0.40f;
+    Bomb = LoadModel("./artsyfartsystuff/bomb.obj");
+
+    for(int i=0;i<MAX_MODELS;i++)
+        if(!(Enemies.model[i].model = LoadModel(BaddieModels[i])))
+            return 0;
+
+    Enemies.model[1].size = 0.30f;
+    Enemies.model[2].size = 0.40f;
 
     for(int i=0;i<2;i++)
         poweruptextures[i] = LoadTexture(PowerupTextures[i]);
@@ -412,6 +452,8 @@ int Engine::Init()
         startextures[i] = LoadTexture(StarTextures[i]); 
         Enemies.model[0].textures[i] = LoadTexture(BaddieTextures_1[i]);
         Enemies.model[1].textures[i] = LoadTexture(BaddieTextures_2[i]);
+        Enemies.model[2].textures[i] = LoadTexture(BaddieTextures_3[i]);
+        bombtextures[i] = LoadTexture(BombTextures[i]);
     }
 
     for(int i=0;i<MAX_STARS;i++)
@@ -419,7 +461,7 @@ int Engine::Init()
         Twinky[i].texture = startextures[rand()%MAX_TEXTURES];
         Twinky[i].pos_y = (rand()%64)-32;
         Twinky[i].pos_x = (rand()%64)-32;
-        Twinky[i].pos_z = (rand()%55)+1;
+        Twinky[i].pos_z = (rand()%120)-60;
     }
 
     Player.model = LoadModel("./artsyfartsystuff/playership.obj");
@@ -578,6 +620,15 @@ void Engine::MainLoop()
                 Player.Attack();
         }
 
+        if(screenflicker > 0)
+        {
+            glClearColor(1,1,1,1);
+            screenflicker -= dtime;
+        }
+        else
+            glClearColor(0,0,0,1);
+
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glLoadIdentity();
 
@@ -633,8 +684,31 @@ void Engine::DrawPowerup()
         {
             glPushMatrix();
             glTranslatef(Boost[i].pos_x,0,Boost[i].pos_y);
-            glRotatef(Boost[i].rot,0,0,1);
-            DrawModel(Powerup, poweruptextures[Boost[i].type]);
+
+            if(Boost[i].type < 2)
+            {
+                glRotatef(Boost[i].rot,0,0,1);
+                DrawModel(Powerup, poweruptextures[Boost[i].type]);
+            }
+            else
+            {
+                if(Boost[i].bombflicker < 0)
+                {
+                    switch(Boost[i].type)
+                    {
+                        case 2:
+                            Boost[i].bombstate = (Boost[i].bombstate==0)?1:0;
+                            break;
+                        case 3:
+                            Boost[i].bombstate = (Boost[i].bombstate==2)?3:2;
+                            break;
+                    }
+                    Boost[i].bombflicker = 1.0f;
+                }
+                Boost[i].bombflicker -= dtime;
+                glRotatef(Boost[i].rot,1,1,1);
+                DrawModel(Bomb, bombtextures[Boost[i].bombstate]);
+            }
             glPopMatrix();
         
             Boost[i].rot += 100 * dtime;
@@ -659,12 +733,12 @@ void Engine::DrawPowerup()
                         {
                             if(Player.level == 4)
                                 Player.attacktype = 1;
-                            if(Player.level == MAX_LASER_FILES-1)
-                                Player.attacktype = 2;
                             Player.attacktime -= (0.002f*Player.level);
                         }
                         else
                         {
+                            Player.attacktype = 2;
+
                             Player.health += 10;
                             if(Player.health > 100)
                                 Player.health = 100;
@@ -672,7 +746,21 @@ void Engine::DrawPowerup()
                         break;
                     case 1:
                         alSourcePlay(shieldupsound);
-                        shield += (shield<1.0f)?0.1f:0.0f;
+                        shield += 0.1f;
+                        if(shield > 1.0f)
+                            shield = 1.0f;
+                        break;
+                    case 2:
+                        break;
+                        // Badabad!
+                    case 3:
+                        screenflicker = 0.4f;
+                        for(int i=0;i<MAX_BADIES;i++)
+                            if(Enemies.Badguys[i].alive)
+                            {
+                                score += (Enemies.Badguys[i].worth / 2);
+                                Enemies.Badguys[i].alive = false;
+                            }
                         break;
                 }
                 Boost[i].alive = false;
@@ -698,7 +786,7 @@ void Engine::DrawStars()
         {
             Twinky[i].pos_x = (rand()%64)-32;
             Twinky[i].pos_y = -16;
-            Twinky[i].pos_z = (rand()%55)+1;
+            Twinky[i].pos_z = (rand()%120)-60;
         }
     }
 }
