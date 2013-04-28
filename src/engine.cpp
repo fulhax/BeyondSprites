@@ -108,6 +108,7 @@ void EnemyHandler::Update()
         {
             int type = rand()%MAX_MODELS;
             int level = rand()%4;
+            Badguys[i].randtype = type;
             switch(type)
             {
                 default:
@@ -271,10 +272,20 @@ void LaserHandler::Draw()
                             alSourcef(gEngine.killsound, AL_PITCH, pitch);
                             alSourcePlay(gEngine.killsound);
 
+                            if(gEngine.Enemies.Badguys[e].randtype > 2)
+                            {
+                                if(gEngine.Enemies.Badguys[e].level != 3)
+                                    gEngine.SpawnParticles(4, 0.2f, 0.2f, 0.02f, 30, 1, gEngine.Enemies.Badguys[e].pos_x, gEngine.Enemies.Badguys[e].pos_y);
+                                else
+                                    gEngine.SpawnParticles(2+(rand()%2), 0.2f, 0.2f, 0.02f, 30, 1, gEngine.Enemies.Badguys[e].pos_x, gEngine.Enemies.Badguys[e].pos_y);
+                            }
+                            else
+                            {
+                                gEngine.SpawnParticles(0,0.2f, 0.2f, 0.02f, 30, 1, gEngine.Enemies.Badguys[e].pos_x, gEngine.Enemies.Badguys[e].pos_y);
+                            }
+
                             gEngine.Enemies.Badguys[e].alive = false;
                             gEngine.score += gEngine.Enemies.Badguys[e].worth;
-
-                            gEngine.SpawnParticles(0.2f, 0.2f, 0.02f, 30, 1, gEngine.Enemies.Badguys[e].pos_x, gEngine.Enemies.Badguys[e].pos_y);
 
                             int loot = rand()%10000;
                             if(loot > 6000)
@@ -782,10 +793,22 @@ void ParticleSystem::Update()
         {
             particles[i].life -= gEngine.dtime;
             glPushMatrix();
-            glBindTexture(GL_TEXTURE_2D, gEngine.particletextures[0]);
+            glEnable(GL_BLEND);
+            glEnable(GL_ALPHA_TEST);
+            glAlphaFunc(GL_GEQUAL,0.5);
+            glBindTexture(GL_TEXTURE_2D, gEngine.particletextures[type]);
             glTranslatef(particles[i].pos[0],0,particles[i].pos[1]);
 
             float size = ((particles[i].life/plifetime) * maxsize) / 2.0f;
+            switch(type)
+            {
+                case 0: case 1:
+                    glBlendFunc(GL_ONE,GL_ONE);
+                break;
+                default:
+                    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+                break;
+            }
             glBegin(GL_QUADS);
                 glTexCoord2f(0,0);
                 glVertex3f(-size,0.0f,-size);
@@ -796,6 +819,7 @@ void ParticleSystem::Update()
                 glTexCoord2f(1,0);
                 glVertex3f(size,0.0f,-size);
             glEnd();
+            glDisable(GL_BLEND);
             glPopMatrix();
 
             particles[i].pos[0] += (particles[i].vel * particles[i].dir[0]) * gEngine.dtime;
@@ -822,7 +846,7 @@ void ParticleSystem::Update()
     }
 }
 
-int Engine::SpawnParticles(float lifetime, float plifetime, float rate, float speed, float maxsize, float pos_x, float pos_y)
+int Engine::SpawnParticles(int type, float lifetime, float plifetime, float rate, float speed, float maxsize, float pos_x, float pos_y)
 {
     for(int i=0;i<MAX_PARTICLE_SYSTEMS;i++)
         if(!psystems[i].alive)
@@ -832,6 +856,7 @@ int Engine::SpawnParticles(float lifetime, float plifetime, float rate, float sp
 
             psystems[i].maxsize = maxsize;
 
+            psystems[i].type = type;
             psystems[i].ratetick = 0;
             psystems[i].rate = rate;
             psystems[i].lifetime = lifetime;

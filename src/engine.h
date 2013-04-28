@@ -224,6 +224,7 @@ struct Entity
     void Draw();
     void Attack();
 
+    int randtype;
 
     float size;
     Entity();
@@ -277,6 +278,7 @@ struct ParticleSystem
 
     float maxsize;
     float ratetick;
+    int type;
 
     void Update();
 };
@@ -294,7 +296,7 @@ struct Engine
     float shield;
     int score;
 
-    int SpawnParticles(float lifetime, float plifetime, float rate, float speed, float maxsize,float pos_x, float pos_y);
+    int SpawnParticles(int type, float lifetime, float plifetime, float rate, float speed, float maxsize,float pos_x, float pos_y);
     void DrawParticles();
     ParticleSystem psystems[MAX_PARTICLE_SYSTEMS];
 
