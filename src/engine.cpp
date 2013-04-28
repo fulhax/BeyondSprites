@@ -1142,6 +1142,7 @@ void Engine::DrawShield()
     }
     shield_anim -= dtime;
 
+    glDisable(GL_ALPHA_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glColor4f(1,shield,shield,shield);
