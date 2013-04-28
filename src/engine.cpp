@@ -787,6 +787,17 @@ void Engine::MainLoop()
             glPopMatrix();
 
             glPrint(&defFont, 32, 130, "-=] Highscore [=-");
+            FILE *h=fopen("./high.score", "r");
+            if(h)
+            {
+                for(int i=0;i<10;i++)
+                    fscanf(h,"%s %d", s[i].name, &s[i].score);
+                fclose(h);
+            }
+            
+            for(int i=0;i<10;i++)
+                glPrint(&defFont, 32, 160+(20*i), "%s            %d",s[i].name, s[i].score);
+
             glPrint(&defFont, 32,430, "Press [Enter] to start");
 
             DrawStars();
@@ -866,16 +877,41 @@ void Engine::MainLoop()
 
             if(restart)
             {
-                Score s[11];
-                FILE *h=fopen("./high.score", "r");
+                strcpy(s[10].name,name);
+                s[10].score = score;
+
+                for(int i=0;i<11;i++)
+                    for(int j=0;j<11;j++)
+                    {
+                        if(j!=i)
+                        {
+                            char tmpn[4] = {0};
+                            int tmps = 0;
+
+                            if(s[i].score > s[j].score)
+                            {
+                                strcpy(tmpn,s[i].name);
+                                tmps = s[i].score;
+
+                                strcpy(s[i].name,s[j].name);
+                                s[i].score = s[j].score;
+
+                                strcpy(s[j].name,tmpn);
+                                s[j].score = tmps;
+                            }
+                        }
+                    }
+
+                FILE *h=fopen("./high.score","w");
                 if(h)
                 {
                     for(int i=0;i<10;i++)
-                        scanf("%s %d", s[i].name, s[i].score);
+                        fprintf(h,"%s %d\n", s[i].name, s[i].score);
                     fclose(h);
                 }
 
                 Reset();
+                restart = false;
             }
 
             if(glfwGetKey(GLFW_KEY_UP) == GLFW_PRESS)
