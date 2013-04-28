@@ -709,7 +709,7 @@ void Engine::MainLoop()
 
         if(InMenu)
         {
-            
+            //glPrint(&defFont, "[GameName]", 50, 0);
             continue;
         }
 
@@ -896,6 +896,14 @@ int Engine::SpawnParticles(int type, float lifetime, float plifetime, float rate
     for(int i=0;i<MAX_PARTICLE_SYSTEMS;i++)
         if(!psystems[i].alive)
         {
+            bool trynext = false;
+            for(int j=0;j<MAX_PARTICLES;j++)
+                if(psystems[i].particles[j].life != 0)
+                    trynext = true;
+
+            if(trynext)
+                continue;
+
             psystems[i].pos_x = pos_x;
             psystems[i].pos_y = pos_y;
 
