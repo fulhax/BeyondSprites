@@ -83,6 +83,21 @@ void EnemyHandler::Update()
                     gEngine.Player.health -= Badguys[i].health;
 
                     Badguys[i].alive = false;
+
+                    if(gEngine.Enemies.Badguys[i].randtype > 2)
+                    {
+                        if(gEngine.Enemies.Badguys[i].level != 3)
+                            gEngine.SpawnParticles(4, 0.2f, 1.2f, 0.02f, 5, 1, gEngine.Enemies.Badguys[i].pos_x, gEngine.Enemies.Badguys[i].pos_y);
+                        else
+                            gEngine.SpawnParticles(2+(rand()%2), 0.2f, 0.8f, 0.02f, 5, 1, gEngine.Enemies.Badguys[i].pos_x, gEngine.Enemies.Badguys[i].pos_y);
+                    }
+                    else
+                    {
+                        gEngine.SpawnParticles(0,0.2f, 0.2f, 0.02f, 30, 1, gEngine.Enemies.Badguys[i].pos_x, gEngine.Enemies.Badguys[i].pos_y);
+                    }
+
+                    if(gEngine.Player.health <= 0)
+                        gEngine.SpawnParticles(0,0.2f, 0.2f, 0.02f, 30, 1, gEngine.Player.pos_x, gEngine.Player.pos_y);
                 }
             }
 
@@ -182,7 +197,7 @@ void EnemyHandler::Update()
                     Badguys[i].level = level;
                     Badguys[i].health = 5*(type+1);
                     if(level == 3)
-                        Badguys[i].health = 1;
+                        Badguys[i].health = 2*(type+1);
                 break;
             }
 
