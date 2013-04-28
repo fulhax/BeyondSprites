@@ -127,6 +127,8 @@ void EnemyHandler::Update()
                     Badguys[i].texture = model[type].textures[level];
                     Badguys[i].attacktype = 1;
                     Badguys[i].worth = 10*(level+1);
+
+                    Badguys[i].rotamp = 0;
                 break;
                 case 1:
                     Badguys[i].freq = rand()%10;
