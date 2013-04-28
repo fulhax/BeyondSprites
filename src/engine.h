@@ -143,6 +143,8 @@ struct Score
 {
     char name[4];
     int score;
+
+    Score() { strcpy(name,"AAA"); score = 0; }
 };
 
 struct Laser
@@ -294,6 +296,8 @@ struct ParticleSystem
 
 struct Engine
 {
+    Score s[11];
+
     float badiecounter;
     Entity Player;
     bool Running;
