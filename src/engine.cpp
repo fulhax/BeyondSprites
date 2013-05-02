@@ -10,7 +10,6 @@ Entity::Entity()
     pos_y = 0;
     speed = 10;
     health = 10;
-    model = 0;
     texture = 0;
     attacktime = 0.3f;
     nextattack = attacktime;
@@ -536,12 +535,12 @@ int Engine::Init()
     glEnable(GL_CULL_FACE);
     glClearColor(0,0,0,1);
 
-    if(!alutInit(0,0))
+/*    if(!alutInit(0,0))
     {
         fprintf(stderr,"ohnos openal pooped\n");
         return 0;
     }
-
+*/
     glfwSetWindowSizeCallback(handleResize);
     screenflicker = 0;
 
@@ -559,14 +558,14 @@ int Engine::Init()
     fontimage = LoadTexture("./artsyfartsystuff/font.tga");
     defFont.Load(fontimage,512,512);
 
-    Powerup = LoadModel("./artsyfartsystuff/powerup.obj");
-    Star = LoadModel("./artsyfartsystuff/star.obj");
-    Shield = LoadModel("./artsyfartsystuff/shield.obj");
-    PewPew.model = LoadModel("./artsyfartsystuff/pewpewlasers.obj");
-    Bomb = LoadModel("./artsyfartsystuff/bomb.obj");
+    Powerup.Load("./artsyfartsystuff/powerup.obj");
+    Star.Load("./artsyfartsystuff/star.obj");
+    Shield.Load("./artsyfartsystuff/shield.obj");
+    PewPew.model.Load("./artsyfartsystuff/pewpewlasers.obj");
+    Bomb.Load("./artsyfartsystuff/bomb.obj");
 
     for(int i=0;i<MAX_MODELS;i++)
-        if(!(Enemies.model[i].model = LoadModel(BaddieModels[i])))
+        if(!(Enemies.model[i].model.Load(BaddieModels[i])))
             return 0;
 
     Enemies.model[1].size = 0.30f;
@@ -605,7 +604,7 @@ int Engine::Init()
 
     titleimage = LoadTexture("./artsyfartsystuff/title.tga");
 
-    Player.model = LoadModel("./artsyfartsystuff/playership.obj");
+    Player.model.Load("./artsyfartsystuff/playership.obj");
     Player.texture = LoadTexture("./artsyfartsystuff/playership.tga");
 
     Player.type = 1;
@@ -626,8 +625,8 @@ int Engine::Init()
 
 unsigned int Engine::LoadSound(const char* filename)
 {
-    unsigned int source;
-    unsigned int buf = alutCreateBufferFromFile(filename);
+    unsigned int source=-1;
+/*    unsigned int buf = alutCreateBufferFromFile(filename);
     if(alGetError() != AL_NO_ERROR)
     {
         fprintf(stderr, "Sound file failed to load %s : (0x%x) : (0x%x) %s\n",filename, alGetError(), alutGetError(), alutGetErrorString(alutGetError()));
@@ -636,7 +635,7 @@ unsigned int Engine::LoadSound(const char* filename)
 
     alGenSources(1,&source);
     alSourcei(source, AL_BUFFER, buf);
-
+*/
     return source;
 }
 
@@ -670,53 +669,42 @@ void Engine::PlayMusic()
     }
 }
 
-aiScene* Engine::LoadModel(const char *filename)
-{
-    const aiScene *model = aiImportFile(filename, aiProcess_SortByPType | aiProcess_Triangulate);
-    if(!model)
-    {
-        fprintf(stderr, "Load model failed for %s : %s\n", filename, aiGetErrorString());
-        return 0;
-    }
-    printf("Loaded model %s\n", filename); 
-    return (aiScene*)model;
-}
 
-void Engine::DrawModel(aiScene* model, unsigned int texture)
+void Engine::DrawModel(Mesh_Obj model, unsigned int texture)
 {
     glBindTexture(GL_TEXTURE_2D,texture);
-    for(unsigned int m=0;m<model->mNumMeshes;m++)
+    for(unsigned int m=0;m<model.numgroups;m++)
     {
         glBegin(GL_TRIANGLES);
 
-        for(unsigned int f=0;f<model->mMeshes[m]->mNumFaces;f++)
+        for(unsigned int f=0;f<model.groups[m].numFaces;f++)
         {
             glTexCoord2f(
-                    model->mMeshes[m]->mTextureCoords[0][model->mMeshes[m]->mFaces[f].mIndices[0]].x,
-                    model->mMeshes[m]->mTextureCoords[0][model->mMeshes[m]->mFaces[f].mIndices[0]].y
+                    model.uvs[model.groups[m].faces[f].uv[0]].x,
+                    model.uvs[model.groups[m].faces[f].uv[0]].y
             );
             glVertex3f(
-                    model->mMeshes[m]->mVertices[model->mMeshes[m]->mFaces[f].mIndices[0]].x,
-                    model->mMeshes[m]->mVertices[model->mMeshes[m]->mFaces[f].mIndices[0]].y,
-                    model->mMeshes[m]->mVertices[model->mMeshes[m]->mFaces[f].mIndices[0]].z
+                model.verts[model.groups[m].faces[f].vert[0]].x,
+                    model.verts[model.groups[m].faces[f].vert[0]].y,
+                    model.verts[model.groups[m].faces[f].vert[0]].z
             );
             glTexCoord2f(
-                    model->mMeshes[m]->mTextureCoords[0][model->mMeshes[m]->mFaces[f].mIndices[1]].x,
-                    model->mMeshes[m]->mTextureCoords[0][model->mMeshes[m]->mFaces[f].mIndices[1]].y
+                    model.uvs[model.groups[m].faces[f].uv[1]].x,
+                    model.uvs[model.groups[m].faces[f].uv[1]].y
             );
             glVertex3f(
-                    model->mMeshes[m]->mVertices[model->mMeshes[m]->mFaces[f].mIndices[1]].x,
-                    model->mMeshes[m]->mVertices[model->mMeshes[m]->mFaces[f].mIndices[1]].y,
-                    model->mMeshes[m]->mVertices[model->mMeshes[m]->mFaces[f].mIndices[1]].z
+                    model.verts[model.groups[m].faces[f].vert[1]].x,
+                    model.verts[model.groups[m].faces[f].vert[1]].y,
+                    model.verts[model.groups[m].faces[f].vert[1]].z
             );
             glTexCoord2f(
-                    model->mMeshes[m]->mTextureCoords[0][model->mMeshes[m]->mFaces[f].mIndices[2]].x,
-                    model->mMeshes[m]->mTextureCoords[0][model->mMeshes[m]->mFaces[f].mIndices[2]].y
+                    model.uvs[model.groups[m].faces[f].uv[2]].x,
+                    model.uvs[model.groups[m].faces[f].uv[2]].y
             );
             glVertex3f(
-                    model->mMeshes[m]->mVertices[model->mMeshes[m]->mFaces[f].mIndices[2]].x,
-                    model->mMeshes[m]->mVertices[model->mMeshes[m]->mFaces[f].mIndices[2]].y,
-                    model->mMeshes[m]->mVertices[model->mMeshes[m]->mFaces[f].mIndices[2]].z
+                    model.verts[model.groups[m].faces[f].vert[2]].x,
+                    model.verts[model.groups[m].faces[f].vert[2]].y,
+                    model.verts[model.groups[m].faces[f].vert[2]].z
             );
         }
 
@@ -1331,5 +1319,5 @@ void Engine::DrawScore()
 
 void Engine::Shutdown()
 {
-    alutExit();
+//    alutExit();
 }

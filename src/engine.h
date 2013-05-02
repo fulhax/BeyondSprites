@@ -7,14 +7,13 @@
 #include <GL/glu.h>
 #include <stdio.h>
 #include <math.h>
-
-#include <assimp/cimport.h>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include <AL/al.h>
 #include <AL/alc.h>
-#include <AL/alut.h>
+//#include <AL/alut.h>
+#include "Mesh_Obj.h"
 
 #define PI 3.14f
 
@@ -169,7 +168,7 @@ struct Laser
 
 struct LaserHandler
 {
-    aiScene* model;
+    Mesh_Obj model;
     unsigned int textures[MAX_LASER_FILES];
     Laser Lasers[MAX_LASER];
 
@@ -180,11 +179,11 @@ struct LaserHandler
 struct ModelHandler
 {
     float size;
-    aiScene* model;
+    Mesh_Obj model;
     unsigned int textures[MAX_TEXTURES];
 
-    ModelHandler() {
-        model = 0;
+    ModelHandler() 
+    {
         size = 0.70f;
     };
 };
@@ -205,7 +204,7 @@ struct Entity
     int level;
     int worth;
 
-    aiScene* model;
+    Mesh_Obj model;
     unsigned int texture;
 
     float start_x;
@@ -313,16 +312,16 @@ struct Engine
     void DrawParticles();
     ParticleSystem psystems[MAX_PARTICLE_SYSTEMS];
 
-    aiScene* Shield;
+    Mesh_Obj Shield;
     unsigned int shieldtextures[MAX_TEXTURES];
 
-    aiScene* Powerup;
+    Mesh_Obj Powerup;
     unsigned int poweruptextures[2];
 
-    aiScene* Star;
+    Mesh_Obj Star;
     unsigned int startextures[MAX_TEXTURES];
 
-    aiScene* Bomb;
+    Mesh_Obj Bomb;
     unsigned int bombtextures[MAX_TEXTURES];
     unsigned int rocktextures[MAX_TEXTURES];
     unsigned int particletextures[MAX_PARTICLE_FILES];
@@ -346,8 +345,7 @@ struct Engine
     float dtime;
     unsigned int LoadSound(const char* filename);
     unsigned int LoadTexture(const char* filename);
-    void DrawModel(aiScene* model, unsigned int texture);
-    aiScene* LoadModel(const char* filename);
+    void DrawModel(Mesh_Obj model, unsigned int texture);
 
     void DrawScore();
     void PlayMusic();
