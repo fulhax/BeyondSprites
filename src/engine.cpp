@@ -1,4 +1,5 @@
 #include "engine.h"
+#include "tga.h"
 #include <AL/al.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
@@ -74,6 +75,7 @@ int Engine::Init()
         return 0;
     }
 
+    glfwMakeContextCurrent(glWindow);
     glfwSwapInterval(0);
     glViewport(0, 0, 640, 480);
 
@@ -208,7 +210,7 @@ unsigned int Engine::LoadTexture(const char* filename)
     glGenTextures(1, &t);
     glBindTexture(GL_TEXTURE_2D, t);
 
-    if(glfwLoadTexture2D(filename, GLFW_BUILD_MIPMAPS_BIT))
+    if(loadTga(filename, t))
     {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -284,6 +286,7 @@ void Engine::MainLoop()
 
     while(Running)
     {
+        glfwPollEvents();
         currtime = glfwGetTime();
         dtime = currtime - oldtime;
         oldtime = currtime;
@@ -298,7 +301,6 @@ void Engine::MainLoop()
         if(InMenu)
         {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
             glLoadIdentity();
 
             glTranslatef(0, 0, -15);
