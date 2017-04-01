@@ -12,26 +12,8 @@
 *.la
 *.a
 
-# Automake Junk
-.dep
-Makefile
-/announcement
-/aclocal.m4
-/.autom4te.cache
-/config.cache
-/config.log
-/config.status
-/config.status.lineno
-/configure.lineno
-/aclocal
-/automake
-/runtest
-cscope.files
-cscope.in.out
-cscope.out
-cscope.po.out
-tags
-TAGS
-
 # Junk
 Debug
+
+#build folder
+build
