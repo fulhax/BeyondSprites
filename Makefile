@@ -42,20 +42,17 @@ verifybuildtype: build/Makefile
 debug:
 	$(MAKE) verifybuildtype DEBUG=1
 	$(MAKE) build DEBUG=1
+	cp build/beyondsprites bin/beyondsprites
 
 release:
 	$(MAKE) verifybuildtype RELEASE=1
 	$(MAKE) build RELEASE=1
+	cp build/beyondsprites bin/beyondsprites
 
 release_dbg_info:
 	$(MAKE) verifybuildtype RELEASE_DBG_INFO=1
 	$(MAKE) build RELEASE_DBG_INFO=1
-
-install: build
-	$(MAKE) -C build install
-
-uninstall: build/install_manifest.txt
-	$(MAKE) -C build uninstall
+	cp build/beyondsprites bin/beyondsprites
 
 clean:
 	$(MAKE) -C "build" clean

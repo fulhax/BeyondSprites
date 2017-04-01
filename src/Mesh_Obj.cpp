@@ -44,7 +44,7 @@ Mesh_Obj::~Mesh_Obj()
 
 int Mesh_Obj::Load(const char* filename)
 {
-    printf("starting to load:%s\n", filename);
+    //printf("starting to load:%s\n", filename);
     /*UpdateTime();
     float timestartofload=timesincestart;*/
     FILE* f = fopen(filename, "rb");
@@ -258,16 +258,16 @@ int Mesh_Obj::Load(const char* filename)
 
         }
 
-        int pro = pos / (end / 1000);
+        //int pro = pos / (end / 1000);
 
-        if(pro != lastpro)
-        {
-            lastpro = pro;
-            printf("\rloading obj:%i.%i%%  ", pro / 10, pro % 10);
-        }
+        //if(pro != lastpro)
+        //{
+            //lastpro = pro;
+            //printf("\rloading obj:%i.%i%%  ", pro / 10, pro % 10);
+        //}
     }
 
-    printf("\rloading obj:100%%       \n");
+    //printf("\rloading obj:100%%       \n");
     fclose(f);
     /*UpdateTime();
     printf("done in %f seconds\n",timesincestart-timestartofload);*/
