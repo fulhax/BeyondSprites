@@ -8,7 +8,6 @@
 obj_group::obj_group()
 {
     numFaces = 0;
-    numTris = 0;
 
     for(int i = 0; i < 256; i++)
     {
@@ -44,9 +43,6 @@ Mesh_Obj::~Mesh_Obj()
 
 int Mesh_Obj::Load(const char* filename)
 {
-    //printf("starting to load:%s\n", filename);
-    /*UpdateTime();
-    float timestartofload=timesincestart;*/
     FILE* f = fopen(filename, "rb");
 
     if(!f)
@@ -117,7 +113,6 @@ int Mesh_Obj::Load(const char* filename)
         {
             groupnum++;
             groups[groupnum].numFaces = 0;
-            groups[groupnum].numTris = 0;
             sscanf(line, "g %s", &groups[groupnum].name);
             g = &groups[groupnum];
             numgroups++;
@@ -127,7 +122,6 @@ int Mesh_Obj::Load(const char* filename)
         {
             groupnum++;
             groups[groupnum].numFaces = 0;
-            groups[groupnum].numTris = 0;
             sscanf(line, "g %s", &groups[groupnum].name);
             g = &groups[groupnum];
             numgroups++;
@@ -139,7 +133,6 @@ int Mesh_Obj::Load(const char* filename)
             {
                 groupnum++;
                 groups[groupnum].numFaces = 0;
-                groups[groupnum].numTris = 0;
                 sprintf(groups[groupnum].name, "defaultgroup");
                 g = &groups[groupnum];
                 numgroups++;
@@ -173,24 +166,20 @@ int Mesh_Obj::Load(const char* filename)
             {
                 case FACETYPE_POSUVNORMAL:
                 {
-                    face.numverts = sscanf(line, "f %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i",
+                    face.numverts = sscanf(line, "f %i/%i/%i %i/%i/%i %i/%i/%i",
                                            &face.vert[0], &face.uv[0], &face.normal[0],
                                            &face.vert[1], &face.uv[1], &face.normal[1],
-                                           &face.vert[2], &face.uv[2], &face.normal[2],
-                                           &face.vert[3], &face.uv[3], &face.normal[3]
+                                           &face.vert[2], &face.uv[2], &face.normal[2]
                                           ) / 3;
                     face.vert[0]--;
                     face.vert[1]--;
                     face.vert[2]--;
-                    face.vert[3]--;
                     face.uv[0]--;
                     face.uv[1]--;
                     face.uv[2]--;
-                    face.uv[3]--;
                     face.normal[0]--;
                     face.normal[1]--;
                     face.normal[2]--;
-                    face.normal[3]--;
                     break;
                 }
 
@@ -199,17 +188,14 @@ int Mesh_Obj::Load(const char* filename)
                     face.numverts = sscanf(line, "f %i/%i %i/%i %i/%i %i/%i",
                                            &face.vert[0], &face.uv[0],
                                            &face.vert[1], &face.uv[1],
-                                           &face.vert[2], &face.uv[2],
-                                           &face.vert[3], &face.uv[3]
+                                           &face.vert[2], &face.uv[2]
                                           ) / 2;
                     face.vert[0]--;
                     face.vert[1]--;
                     face.vert[2]--;
-                    face.vert[3]--;
                     face.uv[0]--;
                     face.uv[1]--;
                     face.uv[2]--;
-                    face.uv[3]--;
                     break;
                 }
 
@@ -218,17 +204,14 @@ int Mesh_Obj::Load(const char* filename)
                     face.numverts = sscanf(line, "f %i//%i %i//%i %i//%i %i//%i",
                                            &face.vert[0], &face.normal[0],
                                            &face.vert[1], &face.normal[1],
-                                           &face.vert[2], &face.normal[2],
-                                           &face.vert[3], &face.normal[3]
+                                           &face.vert[2], &face.normal[2]
                                           ) / 2;
                     face.vert[0]--;
                     face.vert[1]--;
                     face.vert[2]--;
-                    face.vert[3]--;
                     face.normal[0]--;
                     face.normal[1]--;
                     face.normal[2]--;
-                    face.normal[3]--;
                     break;
                 }
 
@@ -237,39 +220,20 @@ int Mesh_Obj::Load(const char* filename)
                     face.numverts = sscanf(line, "f %i %i %i %i",
                                            &face.vert[0],
                                            &face.vert[1],
-                                           &face.vert[2],
-                                           &face.vert[3]
+                                           &face.vert[2]
                                           );
                     face.vert[0]--;
                     face.vert[1]--;
                     face.vert[2]--;
-                    face.vert[3]--;
                     break;
                 }
             }
 
             g->numFaces++;
-            g->numTris++;
-
-            if(face.numverts == 3)
-            {
-                g->numTris++;
-            }
-
         }
 
-        //int pro = pos / (end / 1000);
-
-        //if(pro != lastpro)
-        //{
-            //lastpro = pro;
-            //printf("\rloading obj:%i.%i%%  ", pro / 10, pro % 10);
-        //}
     }
 
-    //printf("\rloading obj:100%%       \n");
     fclose(f);
-    /*UpdateTime();
-    printf("done in %f seconds\n",timesincestart-timestartofload);*/
     return 1;
 }

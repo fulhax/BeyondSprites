@@ -659,6 +659,7 @@ void Engine::MainLoop()
 int Engine::SpawnParticles(int type, float lifetime, float plifetime, float rate, float speed, float maxsize, float pos_x, float pos_y)
 {
     for(int i = 0; i < MAX_PARTICLE_SYSTEMS; i++)
+    {
         if(!psystems[i].alive)
         {
             bool trynext = false;
@@ -689,6 +690,7 @@ int Engine::SpawnParticles(int type, float lifetime, float plifetime, float rate
             psystems[i].alive = true;
             return i;
         }
+    }
 
     return 0;
 }

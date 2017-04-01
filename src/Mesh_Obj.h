@@ -11,16 +11,15 @@ struct vec3
 };
 struct obj_face
 {
-    unsigned int vert[4];
-    unsigned int normal[4];
-    unsigned int uv[4];
+    unsigned int vert[3];
+    unsigned int normal[3];
+    unsigned int uv[3];
     unsigned char numverts;
 };
 struct obj_group
 {
-    obj_face faces[512];
+    obj_face faces[8192];
     unsigned int numFaces;
-    unsigned int numTris;
     char name[256];
     obj_group();
 };
@@ -35,8 +34,8 @@ public:
     float bbox_max_x;
     float bbox_max_y;
     float bbox_max_z;
-    vec3 verts[512];
-    vec2 uvs[512];
+    vec3 verts[8192];
+    vec2 uvs[8192];
     obj_group groups[8];
     unsigned int numverts;
     unsigned int numnormals;
