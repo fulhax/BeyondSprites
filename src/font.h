@@ -1,8 +1,6 @@
 #ifndef __FONT_H
 #define __FONT_H
 
-#include <GL/glfw.h>
-
 struct Font
 {
     unsigned int font;
@@ -10,13 +8,13 @@ struct Font
 
     int ch;
     int cw;
-    
+
     void Load(unsigned int infont, int width = 128, int height = 128);
 
-    ~Font() { glDeleteLists(font,256); }
-    Font() { font = glGenLists(256); }
+    ~Font();
+    Font();
 };
 
-void glPrint(Font *font, int x,int y, const char* text, ...);
+void glPrint(Font* font, int x, int y, const char* text, ...);
 
 #endif

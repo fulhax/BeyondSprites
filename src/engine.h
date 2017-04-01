@@ -3,16 +3,6 @@
 
 #include "font.h"
 
-#include <GL/glfw.h>
-#include <GL/glu.h>
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
-#include <stdlib.h>
-
-#include <AL/al.h>
-#include <AL/alc.h>
-//#include <AL/alut.h>
 #include "Mesh_Obj.h"
 
 #define PI 3.14f
@@ -34,18 +24,20 @@
 
 #define MAX_PARTICLE_FILES 5
 
-static char LaserFiles[][40] = {
-   "./artsyfartsystuff/pewpewblue.tga",
-   "./artsyfartsystuff/pewpewdarkness.tga",
-   "./artsyfartsystuff/pewpewdarkorange.tga",
-   "./artsyfartsystuff/pewpewgreen.tga",
-   "./artsyfartsystuff/pewpewlightblue.tga",
-   "./artsyfartsystuff/pewpeworange.tga",
-   "./artsyfartsystuff/pewpewpink.tga",
-   "./artsyfartsystuff/pewpewred.tga"
+static char LaserFiles[][40] =
+{
+    "./artsyfartsystuff/pewpewblue.tga",
+    "./artsyfartsystuff/pewpewdarkness.tga",
+    "./artsyfartsystuff/pewpewdarkorange.tga",
+    "./artsyfartsystuff/pewpewgreen.tga",
+    "./artsyfartsystuff/pewpewlightblue.tga",
+    "./artsyfartsystuff/pewpeworange.tga",
+    "./artsyfartsystuff/pewpewpink.tga",
+    "./artsyfartsystuff/pewpewred.tga"
 };
 
-static char BaddieModels[][40] = {
+static char BaddieModels[][40] =
+{
     "./artsyfartsystuff/baddie1.obj",
     "./artsyfartsystuff/baddie2.obj",
     "./artsyfartsystuff/baddie3.obj",
@@ -53,39 +45,44 @@ static char BaddieModels[][40] = {
     "./artsyfartsystuff/rock3_2.obj",
     "./artsyfartsystuff/rock2_1.obj", // Mellan
     "./artsyfartsystuff/rock2_2.obj"
-/*    "./artsyfartsystuff/rock1_1.obj", // Stor
-    "./artsyfartsystuff/rock1_2.obj"*/
+    /*    "./artsyfartsystuff/rock1_1.obj", // Stor
+        "./artsyfartsystuff/rock1_2.obj"*/
 };
 
-static char RockTextures[][40] = {
+static char RockTextures[][40] =
+{
     "./artsyfartsystuff/bigrock1.tga",
     "./artsyfartsystuff/bigrock2.tga",
     "./artsyfartsystuff/bigrock3.tga",
     "./artsyfartsystuff/bigrock4.tga" // ICE
 };
 
-static char BaddieTextures_2[][40] = {
+static char BaddieTextures_2[][40] =
+{
     "./artsyfartsystuff/enemy2_1.tga",
     "./artsyfartsystuff/enemy2_2.tga",
     "./artsyfartsystuff/enemy2_3.tga",
     "./artsyfartsystuff/enemy2_4.tga"
 };
 
-static char BaddieTextures_1[][40] = {
+static char BaddieTextures_1[][40] =
+{
     "./artsyfartsystuff/baddie1.tga",
     "./artsyfartsystuff/baddie2.tga",
     "./artsyfartsystuff/baddie3.tga",
     "./artsyfartsystuff/baddie4.tga"
 };
 
-static char BaddieTextures_3[][40] = {
+static char BaddieTextures_3[][40] =
+{
     "./artsyfartsystuff/enemy3_1.tga",
     "./artsyfartsystuff/enemy3_2.tga",
     "./artsyfartsystuff/enemy3_3.tga",
     "./artsyfartsystuff/enemy3_4.tga"
 };
 
-static char MusicFiles[][40] = {
+static char MusicFiles[][40] =
+{
     "./music/01_tunnel of bodies.wav",
     "./music/02_castles of a viking.wav",
     "./music/03_parks of a forest.wav",
@@ -102,33 +99,38 @@ static char MusicFiles[][40] = {
     "./music/14_the city's ghost.wav"
 };
 
-static char StarTextures[][40] = {
+static char StarTextures[][40] =
+{
     "./artsyfartsystuff/starpower_1.tga",
     "./artsyfartsystuff/starpower_2.tga",
     "./artsyfartsystuff/starpower_3.tga",
     "./artsyfartsystuff/starpower_4.tga"
 };
 
-static char PowerupTextures[][40] = {
+static char PowerupTextures[][40] =
+{
     "./artsyfartsystuff/powerup.tga",
     "./artsyfartsystuff/powerupshield.tga"
 };
 
-static char ShieldTextures[][40] = {
+static char ShieldTextures[][40] =
+{
     "./artsyfartsystuff/shields_1.tga",
     "./artsyfartsystuff/shields_2.tga",
     "./artsyfartsystuff/shields_3.tga",
     "./artsyfartsystuff/shields_4.tga"
 };
 
-static char BombTextures[][40] = {
+static char BombTextures[][40] =
+{
     "./artsyfartsystuff/bomb1.tga",
     "./artsyfartsystuff/bomb2.tga",
     "./artsyfartsystuff/megabomb1.tga",
     "./artsyfartsystuff/megabomb2.tga"
 };
 
-static char ParticleTextures[][45] = {
+static char ParticleTextures[][45] =
+{
     "./artsyfartsystuff/explosionparticle1.tga",
     "./artsyfartsystuff/explosionparticle2.tga",
     "./artsyfartsystuff/iceparticle1.tga",
@@ -143,7 +145,12 @@ struct Score
     char name[4];
     int score;
 
-    Score() { strcpy(name,"AAA"); score = 0; }
+    Score()
+    {
+        name[0] = name[1] = name[2] = 'A';
+        name[3] = 0;
+        score = 0;
+    }
 };
 
 struct Laser
@@ -172,7 +179,7 @@ struct LaserHandler
     unsigned int textures[MAX_LASER_FILES];
     Laser Lasers[MAX_LASER];
 
-    void Spawn(int owner,float x, float y, int level, int dir);
+    void Spawn(int owner, float x, float y, int level, int dir);
     void Draw();
 };
 
@@ -182,7 +189,7 @@ struct ModelHandler
     Mesh_Obj model;
     unsigned int textures[MAX_TEXTURES];
 
-    ModelHandler() 
+    ModelHandler()
     {
         size = 0.70f;
     };
@@ -250,7 +257,10 @@ struct EnemyHandler
 
 struct PowerUp
 {
-    PowerUp() { alive = false; }
+    PowerUp()
+    {
+        alive = false;
+    }
     bool alive;
     int type;
 
@@ -308,7 +318,7 @@ struct Engine
     float shield;
     int score;
 
-    int SpawnParticles(int type, float lifetime, float plifetime, float rate, float speed, float maxsize,float pos_x, float pos_y);
+    int SpawnParticles(int type, float lifetime, float plifetime, float rate, float speed, float maxsize, float pos_x, float pos_y);
     void DrawParticles();
     ParticleSystem psystems[MAX_PARTICLE_SYSTEMS];
 
