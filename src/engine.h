@@ -302,10 +302,11 @@ struct ParticleSystem
 
     void Update();
 };
-
+struct GLFWwindow;
 struct Engine
 {
     Score s[11];
+    GLFWwindow *glWindow;
 
     float badiecounter;
     Entity Player;

@@ -1,9 +1,9 @@
+#include "Mesh_Obj.h"
 #include "engine.h"
 #include <AL/al.h>
 #include <GLFW/glfw3.h>
 #include <cmath>
 #include <stdlib.h>
-#include "Mesh_Obj.h"
 
 Entity::Entity()
 {

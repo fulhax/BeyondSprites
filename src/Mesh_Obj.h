@@ -1,16 +1,6 @@
 #ifndef _MESH_OBJ_H
 #define _MESH_OBJ_H
 
-/*
-struct obj_vec3f
-{
-    float x,y,z;
-};
-
-struct obj_vec2f
-{
-    float x,y;
-};*/
 struct vec2
 {
     float x, y;
@@ -54,7 +44,7 @@ public:
     unsigned int numgroups;
     Mesh_Obj();
     ~Mesh_Obj();
-    int Load(char* filename);
+    int Load(const char* filename);
 };
 
 #endif

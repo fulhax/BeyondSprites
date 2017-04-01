@@ -42,7 +42,7 @@ Mesh_Obj::~Mesh_Obj()
 #define FACETYPE_POSUVNORMAL    3
 #define FACETYPE_UNKNOWN        255
 
-int Mesh_Obj::Load(char* filename)
+int Mesh_Obj::Load(const char* filename)
 {
     printf("starting to load:%s\n", filename);
     /*UpdateTime();

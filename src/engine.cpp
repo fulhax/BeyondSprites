@@ -1,15 +1,15 @@
 #include "engine.h"
 #include <AL/al.h>
 #include <GLFW/glfw3.h>
-#include <cmath>
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <GL/glu.h>
 #include <time.h>
 
 
 Engine gEngine;
-void handleResize(int width, int height)
+void handleResize(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 
@@ -66,13 +66,13 @@ int Engine::Init()
 
     glfwInit();
 
-    if(glfwOpenWindow(640, 480, 8, 8, 8, 0, 24, 8, GLFW_WINDOW) != true)
+    glWindow = glfwCreateWindow(640, 480, "Beyond Sprites", 0, 0);
+
+    if(glWindow == nullptr)
     {
         fprintf(stderr, "ohnos glfw pooped\n");
         return 0;
     }
-
-    glfwSetWindowTitle("Beyond Sprites");
 
     glfwSwapInterval(0);
     glViewport(0, 0, 640, 480);
@@ -95,7 +95,7 @@ int Engine::Init()
             return 0;
         }
     */
-    glfwSetWindowSizeCallback(handleResize);
+    glfwSetWindowSizeCallback(glWindow, handleResize);
     screenflicker = 0;
 
     /* Begin awesome resourcehandling */
@@ -280,13 +280,7 @@ void Engine::MainLoop()
 {
     static float oldtime = glfwGetTime();
     float currtime = 0;
-    bool joystickconnected = glfwGetJoystickParam(GLFW_JOYSTICK_1, GLFW_PRESENT);
-    int joystickbuttons;
-
-    if(joystickconnected)
-    {
-        joystickbuttons = glfwGetJoystickParam(GLFW_JOYSTICK_1, GLFW_BUTTONS);
-    }
+    bool joystickconnected = glfwJoystickPresent(GLFW_JOYSTICK_1);
 
     while(Running)
     {
@@ -296,7 +290,7 @@ void Engine::MainLoop()
 
         PlayMusic();
 
-        if(glfwGetKey(GLFW_KEY_ESC) == GLFW_PRESS)
+        if(glfwGetKey(glWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         {
             Running = false;
         }
@@ -373,21 +367,24 @@ void Engine::MainLoop()
 
             if(joystickconnected)
             {
-                unsigned char buttons[50];
-                glfwGetJoystickButtons(GLFW_JOYSTICK_1, buttons, joystickbuttons);
+                int numButtons = 0;
+                const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &numButtons);
 
-                if(buttons[7] == GLFW_PRESS)
+                if(numButtons > 7)
                 {
-                    InMenu = false;
+                    if(buttons[7] == GLFW_PRESS)
+                    {
+                        InMenu = false;
+                    }
                 }
             }
 
-            if(glfwGetKey(GLFW_KEY_ENTER) == GLFW_PRESS)
+            if(glfwGetKey(glWindow, GLFW_KEY_ENTER) == GLFW_PRESS)
             {
                 InMenu = false;
             }
 
-            glfwSwapBuffers();
+            glfwSwapBuffers(glWindow);
             continue;
         }
 
@@ -398,25 +395,25 @@ void Engine::MainLoop()
 
         if(Player.health > 0)
         {
-            if(glfwGetKey(GLFW_KEY_UP) == GLFW_PRESS)
+            if(glfwGetKey(glWindow, GLFW_KEY_UP) == GLFW_PRESS)
             {
                 Player.pos_y = (Player.pos_y > -6) ? Player.pos_y - Player.speed * dtime : Player.pos_y;
             }
-            else if(glfwGetKey(GLFW_KEY_DOWN) == GLFW_PRESS)
+            else if(glfwGetKey(glWindow, GLFW_KEY_DOWN) == GLFW_PRESS)
             {
                 Player.pos_y = (Player.pos_y < 6) ? Player.pos_y + Player.speed * dtime : Player.pos_y;
             }
 
-            if(glfwGetKey(GLFW_KEY_LEFT) == GLFW_PRESS)
+            if(glfwGetKey(glWindow, GLFW_KEY_LEFT) == GLFW_PRESS)
             {
                 Player.pos_x = (Player.pos_x > -8) ? Player.pos_x - Player.speed * dtime : Player.pos_x;
             }
-            else if(glfwGetKey(GLFW_KEY_RIGHT) == GLFW_PRESS)
+            else if(glfwGetKey(glWindow, GLFW_KEY_RIGHT) == GLFW_PRESS)
             {
                 Player.pos_x = (Player.pos_x < 8) ? Player.pos_x + Player.speed * dtime : Player.pos_x;
             }
 
-            if(glfwGetKey(GLFW_KEY_SPACE) == GLFW_PRESS)
+            if(glfwGetKey(glWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
             {
                 Player.Attack();
             }
@@ -424,9 +421,8 @@ void Engine::MainLoop()
             if(joystickconnected)
             {
                 // gamepad support
-
-                float axis[2];
-                glfwGetJoystickPos(GLFW_JOYSTICK_1, axis, 2);
+                int numAxes = 0;
+                const float* axis = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &numAxes);
 
                 if(axis[1] > 0.3)
                 {
@@ -448,10 +444,10 @@ void Engine::MainLoop()
                     Player.pos_x = (Player.pos_x < 8) ? Player.pos_x + axis[0] * Player.speed * dtime : Player.pos_x;
                 }
 
-                unsigned char buttons[50];
-                glfwGetJoystickButtons(GLFW_JOYSTICK_1, buttons, joystickbuttons);
+                int numButtons = 0;
+                const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &numButtons);
 
-                for(int i = 0; i < joystickbuttons; i++)
+                for(int i = 0; i < numButtons; i++)
                 {
                     if(buttons[i] == GLFW_PRESS)
                     {
@@ -471,7 +467,7 @@ void Engine::MainLoop()
             static bool restart = false;
             static float joytimer = 0;
 
-            if(glfwGetKey(GLFW_KEY_ENTER) == GLFW_PRESS)
+            if(glfwGetKey(glWindow, GLFW_KEY_ENTER) == GLFW_PRESS)
             {
                 restart = true;
             }
@@ -479,16 +475,16 @@ void Engine::MainLoop()
             if(joystickconnected)
             {
                 // gamepad support
-                unsigned char buttons[50];
-                glfwGetJoystickButtons(GLFW_JOYSTICK_1, buttons, joystickbuttons);
+                int numButtons = 0;
+                const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &numButtons);
 
                 if(buttons[7] == GLFW_PRESS)
                 {
                     restart = true;
                 }
 
-                float axis[2];
-                glfwGetJoystickPos(GLFW_JOYSTICK_1, axis, 2);
+                int numAxes = 0;
+                const float* axis = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &numAxes);
 
                 if(joytimer < 0)
                 {
@@ -507,7 +503,13 @@ void Engine::MainLoop()
 
                 static bool buttonsheld[50];
 
-                for(int i = 0; i < joystickbuttons; i++)
+                if(numButtons > 50)
+                {
+                    // what kind of monster controller is this?
+                    numButtons = 50;
+                }
+
+                for(int i = 0; i < numButtons; i++)
                 {
                     if(buttons[i] == GLFW_RELEASE)
                     {
@@ -528,17 +530,17 @@ void Engine::MainLoop()
                 joytimer -= dtime;
             }
 
-            if(glfwGetKey(GLFW_KEY_UP) == GLFW_PRESS)
+            if(glfwGetKey(glWindow, GLFW_KEY_UP) == GLFW_PRESS)
             {
                 keyup = true;
             }
 
-            if(glfwGetKey(GLFW_KEY_DOWN) == GLFW_PRESS)
+            if(glfwGetKey(glWindow, GLFW_KEY_DOWN) == GLFW_PRESS)
             {
                 keydown = true;
             }
 
-            if(glfwGetKey(GLFW_KEY_SPACE) == GLFW_PRESS)
+            if(glfwGetKey(glWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
             {
                 keystep = true;
             }
@@ -586,7 +588,7 @@ void Engine::MainLoop()
                 restart = false;
             }
 
-            if(glfwGetKey(GLFW_KEY_UP) == GLFW_RELEASE)
+            if(glfwGetKey(glWindow, GLFW_KEY_UP) == GLFW_RELEASE)
             {
                 if(keyup)
                 {
@@ -595,7 +597,7 @@ void Engine::MainLoop()
                 }
             }
 
-            if(glfwGetKey(GLFW_KEY_DOWN) == GLFW_RELEASE)
+            if(glfwGetKey(glWindow, GLFW_KEY_DOWN) == GLFW_RELEASE)
             {
                 if(keydown)
                 {
@@ -604,7 +606,7 @@ void Engine::MainLoop()
                 }
             }
 
-            if(glfwGetKey(GLFW_KEY_SPACE) == GLFW_RELEASE)
+            if(glfwGetKey(glWindow, GLFW_KEY_SPACE) == GLFW_RELEASE)
             {
                 if(keystep)
                 {
@@ -647,7 +649,7 @@ void Engine::MainLoop()
         DrawStars();
         DrawScore();
 
-        glfwSwapBuffers();
+        glfwSwapBuffers(glWindow);
         gEngine.Enemies.numberofbadies = badiecounter;
     }
 }
