@@ -8,7 +8,7 @@ find_package(OpenGL REQUIRED)
 find_package(OpenAL REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_search_module(GLFW REQUIRED glfw3)
-
+pkg_search_module(FREEALUT REQUIRED freealut)
 
 set(COMMON_SRC
     "main.cpp"
@@ -23,6 +23,7 @@ include_directories(
     "."
     "${OPENGL_INCLUDE_DIR}"
     ${GLFW_INCLUDE_DIRS}
+    ${FREEALUT_INCLUDE_DIRS}
     ${OPENAL_INCLUDE_DIR}
     )
 
@@ -37,6 +38,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
     ${GLFW_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${OPENAL_LIBRARY}
+    ${FREEALUT_LIBRARIES}
     )
 
 message("openal:${OPENAL_LIBRARIES}")

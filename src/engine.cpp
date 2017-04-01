@@ -1,6 +1,7 @@
 #include "engine.h"
 #include "tga.h"
 #include <AL/al.h>
+#include <AL/alut.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 #include <string.h>
@@ -91,12 +92,12 @@ int Engine::Init()
     glEnable(GL_CULL_FACE);
     glClearColor(0, 0, 0, 1);
 
-    /*    if(!alutInit(0,0))
-        {
-            fprintf(stderr,"ohnos openal pooped\n");
-            return 0;
-        }
-    */
+    if(!alutInit(0, 0))
+    {
+        fprintf(stderr, "ohnos openal pooped\n");
+        return 0;
+    }
+
     glfwSetWindowSizeCallback(glWindow, handleResize);
     screenflicker = 0;
 
@@ -190,16 +191,17 @@ int Engine::Init()
 unsigned int Engine::LoadSound(const char* filename)
 {
     unsigned int source = -1;
-    /*    unsigned int buf = alutCreateBufferFromFile(filename);
-        if(alGetError() != AL_NO_ERROR)
-        {
-            fprintf(stderr, "Sound file failed to load %s : (0x%x) : (0x%x) %s\n",filename, alGetError(), alutGetError(), alutGetErrorString(alutGetError()));
-            return 0;
-        }
+    unsigned int buf = alutCreateBufferFromFile(filename);
 
-        alGenSources(1,&source);
-        alSourcei(source, AL_BUFFER, buf);
-    */
+    if(alGetError() != AL_NO_ERROR)
+    {
+        fprintf(stderr, "Sound file failed to load %s : (0x%x) : (0x%x) %s\n", filename, alGetError(), alutGetError(), alutGetErrorString(alutGetError()));
+        return 0;
+    }
+
+    alGenSources(1, &source);
+    alSourcei(source, AL_BUFFER, buf);
+
     return source;
 }
 
@@ -948,5 +950,5 @@ void Engine::DrawScore()
 
 void Engine::Shutdown()
 {
-    //    alutExit();
+    alutExit();
 }
