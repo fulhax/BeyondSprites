@@ -407,6 +407,16 @@ void Engine::MainLoop()
 
         if(Player.health > 0)
         {
+            if(shield > 0)
+            {
+                shield += dtime * 0.005;
+
+                if(shield > 1)
+                {
+                    shield = 1;
+                }
+            }
+
             if(glfwGetKey(glWindow, GLFW_KEY_UP) == GLFW_PRESS)
             {
                 Player.pos_y = (Player.pos_y > -6) ? Player.pos_y - Player.speed * dtime : Player.pos_y;
@@ -832,7 +842,7 @@ void Engine::DrawPowerup()
 
                     case 1:
                         alSourcePlay(shieldupsound);
-                        shield += 0.1f;
+                        shield += 0.5f;
 
                         if(shield > 1.0f)
                         {
