@@ -68,7 +68,13 @@ int Engine::Init()
 
     glfwInit();
 
-    glWindow = glfwCreateWindow(640, 480, "Beyond Sprites", 0, 0);
+    GLFWmonitor* primary = glfwGetPrimaryMonitor();
+    const GLFWvidmode* videomode = glfwGetVideoMode(primary);
+    glfwWindowHint(GLFW_RED_BITS, videomode->redBits);
+    glfwWindowHint(GLFW_GREEN_BITS, videomode->greenBits);
+    glfwWindowHint(GLFW_BLUE_BITS, videomode->blueBits);
+    glfwWindowHint(GLFW_REFRESH_RATE, videomode->refreshRate);
+    glWindow = glfwCreateWindow(videomode->width, videomode->height, "Beyond Sprites", 0, 0);
 
     if(glWindow == nullptr)
     {
@@ -78,11 +84,11 @@ int Engine::Init()
 
     glfwMakeContextCurrent(glWindow);
     glfwSwapInterval(0);
-    glViewport(0, 0, 640, 480);
+    glViewport(0, 0, videomode->width, videomode->height);
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    float aspect = ((float)640) / 480;
+    float aspect = ((float)videomode->width) / videomode->height;
 
     gluPerspective(45.0, aspect, 1.0, 1000.0);
 
