@@ -284,7 +284,6 @@ void Engine::MainLoop()
 {
     static float oldtime = glfwGetTime();
     float currtime = 0;
-    bool joystickconnected = glfwJoystickPresent(GLFW_JOYSTICK_1);
 
     while(Running)
     {
@@ -369,16 +368,19 @@ void Engine::MainLoop()
             glPrint(&defFont, 340, 240, "Ludum Dare Jam 26");
             DrawStars();
 
-            if(joystickconnected)
+            for(int i = 0; i < GLFW_JOYSTICK_LAST; i++)
             {
-                int numButtons = 0;
-                const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &numButtons);
-
-                if(numButtons > 7)
+                if(glfwJoystickPresent(i))
                 {
-                    if(buttons[7] == GLFW_PRESS)
+                    int numButtons = 0;
+                    const unsigned char* buttons = glfwGetJoystickButtons(i, &numButtons);
+
+                    if(numButtons > 7)
                     {
-                        InMenu = false;
+                        if(buttons[7] == GLFW_PRESS)
+                        {
+                            InMenu = false;
+                        }
                     }
                 }
             }
@@ -422,41 +424,44 @@ void Engine::MainLoop()
                 Player.Attack();
             }
 
-            if(joystickconnected)
+            for(int i = 0; i < GLFW_JOYSTICK_LAST; i++)
             {
-                // gamepad support
-                int numAxes = 0;
-                const float* axis = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &numAxes);
-
-                if(axis[1] > 0.3)
+                if(glfwJoystickPresent(i))
                 {
-                    Player.pos_y = (Player.pos_y > -6) ? Player.pos_y - axis[1] * Player.speed * dtime : Player.pos_y;
-                }
+                    // gamepad support
+                    int numAxes = 0;
+                    const float* axis = glfwGetJoystickAxes(i, &numAxes);
 
-                if(axis[1] < -0.3)
-                {
-                    Player.pos_y = (Player.pos_y < 6) ? Player.pos_y - axis[1] * Player.speed * dtime : Player.pos_y;
-                }
-
-                if(axis[0] < -0.3)
-                {
-                    Player.pos_x = (Player.pos_x > -8) ? Player.pos_x + axis[0] * Player.speed * dtime : Player.pos_x;
-                }
-
-                if(axis[0] > 0.3)
-                {
-                    Player.pos_x = (Player.pos_x < 8) ? Player.pos_x + axis[0] * Player.speed * dtime : Player.pos_x;
-                }
-
-                int numButtons = 0;
-                const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &numButtons);
-
-                for(int i = 0; i < numButtons; i++)
-                {
-                    if(buttons[i] == GLFW_PRESS)
+                    if(axis[1] > 0.3)
                     {
-                        Player.Attack();
-                        break;
+                        Player.pos_y = (Player.pos_y < 6) ? Player.pos_y + axis[1] * Player.speed * dtime : Player.pos_y;
+                    }
+
+                    if(axis[1] < -0.3)
+                    {
+                        Player.pos_y = (Player.pos_y > -6) ? Player.pos_y + axis[1] * Player.speed * dtime : Player.pos_y;
+                    }
+
+                    if(axis[0] < -0.3)
+                    {
+                        Player.pos_x = (Player.pos_x > -8) ? Player.pos_x + axis[0] * Player.speed * dtime : Player.pos_x;
+                    }
+
+                    if(axis[0] > 0.3)
+                    {
+                        Player.pos_x = (Player.pos_x < 8) ? Player.pos_x + axis[0] * Player.speed * dtime : Player.pos_x;
+                    }
+
+                    int numButtons = 0;
+                    const unsigned char* buttons = glfwGetJoystickButtons(i, &numButtons);
+
+                    for(int i = 0; i < numButtons; i++)
+                    {
+                        if(buttons[i] == GLFW_PRESS)
+                        {
+                            Player.Attack();
+                            break;
+                        }
                     }
                 }
             }
@@ -476,62 +481,65 @@ void Engine::MainLoop()
                 restart = true;
             }
 
-            if(joystickconnected)
+            for(int i = 0; i < GLFW_JOYSTICK_LAST; i++)
             {
-                // gamepad support
-                int numButtons = 0;
-                const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &numButtons);
-
-                if(buttons[7] == GLFW_PRESS)
+                if(glfwJoystickPresent(i))
                 {
-                    restart = true;
-                }
+                    // gamepad support
+                    int numButtons = 0;
+                    const unsigned char* buttons = glfwGetJoystickButtons(i, &numButtons);
 
-                int numAxes = 0;
-                const float* axis = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &numAxes);
-
-                if(joytimer < 0)
-                {
-                    if(axis[1] > 0.3)
+                    if(buttons[7] == GLFW_PRESS)
                     {
-                        name[scoreinput] = (name[scoreinput] == 90) ? 48 : name[scoreinput] + 1;
+                        restart = true;
                     }
 
-                    if(axis[1] < -0.3)
+                    int numAxes = 0;
+                    const float* axis = glfwGetJoystickAxes(i, &numAxes);
+
+                    if(joytimer < 0)
                     {
-                        name[scoreinput] = (name[scoreinput] == 48) ? 90 : name[scoreinput] - 1;
-                    }
-
-                    joytimer = 0.2f;
-                }
-
-                static bool buttonsheld[50];
-
-                if(numButtons > 50)
-                {
-                    // what kind of monster controller is this?
-                    numButtons = 50;
-                }
-
-                for(int i = 0; i < numButtons; i++)
-                {
-                    if(buttons[i] == GLFW_RELEASE)
-                    {
-                        if(buttonsheld[i])
+                        if(axis[1] > 0.3)
                         {
-                            scoreinput++;
-                            scoreinput = scoreinput % 3;
-                            buttonsheld[i] = false;
+                            name[scoreinput] = (name[scoreinput] == 90) ? 48 : name[scoreinput] + 1;
+                        }
+
+                        if(axis[1] < -0.3)
+                        {
+                            name[scoreinput] = (name[scoreinput] == 48) ? 90 : name[scoreinput] - 1;
+                        }
+
+                        joytimer = 0.2f;
+                    }
+
+                    static bool buttonsheld[50];
+
+                    if(numButtons > 50)
+                    {
+                        // what kind of monster controller is this?
+                        numButtons = 50;
+                    }
+
+                    for(int i = 0; i < numButtons; i++)
+                    {
+                        if(buttons[i] == GLFW_RELEASE)
+                        {
+                            if(buttonsheld[i])
+                            {
+                                scoreinput++;
+                                scoreinput = scoreinput % 3;
+                                buttonsheld[i] = false;
+                            }
+                        }
+
+                        if(buttons[i] == GLFW_PRESS)
+                        {
+                            buttonsheld[i] = true;
                         }
                     }
 
-                    if(buttons[i] == GLFW_PRESS)
-                    {
-                        buttonsheld[i] = true;
-                    }
+                    joytimer -= dtime;
                 }
-
-                joytimer -= dtime;
             }
 
             if(glfwGetKey(glWindow, GLFW_KEY_UP) == GLFW_PRESS)
